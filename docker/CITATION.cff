@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: "Optimizing Nemotron-3-Super-120B on DGX Spark: Breaking the 14-TPS Bottleneck"
+message: "If you use this optimization methodology or benchmark data, please cite it as below."
+type: software
+authors:
+  - family-names: "Rawat"
+    given-names: "Rajendra Singh"
+    alias: "airawatraj"
+    affiliation: "cogni.chat"
+    orcid: "https://orcid.org/0009-0007-5017-1341"
+repository-code: "https://github.com/airawatraj/dgx-spark-nemotron-super-agent"
+url: "https://github.com/airawatraj/dgx-spark-nemotron-super-agent"
+abstract: >-
+  A technical implementation and benchmarking suite for running Nemotron-3-Super-120B 
+  as an autonomous agent on a personal NVIDIA DGX Spark. This repository documents 
+  the methodology for achieving 23.2+ TPS using NVFP4 Marlin quantization, 
+  speculative decoding, and kernel-level sandboxing via OpenShell/K3s.
+keywords:
+  - "Nemotron"
+  - "DGX Spark"
+  - "vLLM"
+  - "AI Agents"
+  - "NVFP4"
+  - "Performance Benchmarking"
+license: MIT
+version: 1.0.0
+date-released: "2026-05-09"

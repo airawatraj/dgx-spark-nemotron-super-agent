@@ -24,13 +24,14 @@ only o3 could do it at the time of posting.
 Cogni-Brain solved it locally in under 5 minutes via Open WebUI.
 
 <p align="center">
-  <img src="./assets/openwebui_logic_puzzle.png" width="800" alt="Cogni-Brain logic puzzle solution">
+  <img src="./assets/openwebui_logic_puzzle.png" width="600" alt="Logic Puzzle Solution">
+  <br><i>Cogni-Brain reasoning through the Albert-Bernard-Cheryl puzzle</i>
 </p>
 
 The same prompt on NVIDIA's own cloud-hosted endpoint returned an internal server error:
 
 <p align="center">
-  <img src="./assets/cloud_inference_fails.png" width="850">
+  <img src="./assets/cloud_inference_fails.png" width="600">
 </p>
 
 ### 90 minutes of autonomous agentic work
@@ -39,7 +40,8 @@ Cogni-Brain built a complete HTML5 chess app via NemoHermes — pawn promotion,
 en passant, castling — running 60 tool-call iterations completely autonomously. The agent successfully navigated proxy timeouts and managed a massive 130K context window without crashing the KV cache. Progress updates were delivered to Telegram throughout.
 
 <p align="center">
-  <img src="./assets/nemohermes_telegram_chess_build.png" width="350" alt="NemoHermes Telegram Progress Updates">
+  <img src="./assets/nemohermes_telegram_chess_build.png" width="260" alt="Telegram Progress">
+  <br><i>Mobile progress updates via Telegram during the 60-iteration build</i>
 </p>
 
 ### Coding agent in VS Code
@@ -48,13 +50,13 @@ Cogni-Brain running as a coding agent inside VS Code via Continue extension,
 analyzing the vLLM codebase — on the same Spark it is running on.
 
 <p align="center">
-  <img src="./assets/vscode_cogni_brain_agent.png" width="900">
+  <img src="./assets/vscode_cogni_brain_agent.png" width="600" alt="VS Code Agent">
 </p>
-
 ### NemoHermes TUI
 
-![NemoHermes TUI showing Cogni-Brain at 14.8K/131.1K tokens with 11% KV cache usage](./assets/nemohermes_tui_active.png)
-
+<p align="center">
+  <img src="./assets/nemohermes_tui_active.png" width="600" alt="NemoHermes TUI">
+</p>
 ---
 
 ## Benchmark Results
@@ -75,9 +77,13 @@ analyzing the vLLM codebase — on the same Spark it is running on.
 > NemoHermes agent and Open WebUI were **running alongside** during all benchmark runs.
 > TPS includes both reasoning (`<think>`) and answer tokens. See [METHODOLOGY.md](METHODOLOGY.md) for full measurement details.
 
-![Benchmark Test 1-3](./assets/benchmark_test_1-3.png)
+<p align="center">
+  <img src="./assets/benchmark_test_1-3.png" width="600" alt="Benchmark Test 1-3">
+</p>
 
-![Benchmark Test 4-5](./assets/benchmark_test_4-5.png)
+<p align="center">
+  <img src="./assets/benchmark_test_4-5.png" width="600" alt="Benchmark Test 4-5">
+</p>
 
 ---
 
