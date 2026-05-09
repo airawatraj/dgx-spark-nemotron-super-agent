@@ -131,7 +131,7 @@ Without this, sustained agentic sessions will fail mid-task.
 
 ## Agent Configuration Comparison
 
-| Configuration | Sandbox | Stability for long runs | Suitable for production |
+| Configuration | Sandbox | Stability for long runs | Stable for unattended autonomous work |
 |---|---|---|---|
 | Bare OpenClaw | ❌ None | Moderate | No |
 | NemoClaw (OpenClaw + OpenShell) | ✅ Yes | ⚠️ Context loop failures observed | No |
