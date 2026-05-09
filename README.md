@@ -164,7 +164,8 @@ uv run benchmark/benchmark_spark.py
 ```text
 dgx-spark-nemotron-super-agent/
 ├── README.md                    ← this file
-├── METHODOLOGY.md               ← full measurement methodology
+├── METHODOLOGY.md               ← full benchmark measurement methodology
+├── NEMOHERMES.md                ← hardened agentic stack configuration
 ├── CITATION.cff                 ← citation metadata
 ├── setup/
 │   ├── install.sh               ← prerequisites, swap disable
