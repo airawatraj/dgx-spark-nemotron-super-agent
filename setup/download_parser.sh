@@ -8,17 +8,33 @@ PARSER_URL="https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP
 DEST="$(dirname "$0")/../super_v3_reasoning_parser.py"
 
 echo "Downloading super_v3_reasoning_parser.py from NVIDIA HuggingFace..."
-wget -q --show-progress -O "$DEST" "$PARSER_URL"
 
-# Verify it's a Python file, not a redirect/error page
-if file "$DEST" | grep -q "Python"; then
-  echo "✓ Downloaded: $DEST"
-elif head -1 "$DEST" | grep -q "def\|import\|class"; then
-  echo "✓ Downloaded: $DEST"
+# Pass HF_TOKEN if available (required if the model repo becomes gated)
+WGET_OPTS=(-q --show-progress)
+if [[ -n "${HF_TOKEN:-}" ]]; then
+  WGET_OPTS+=(--header "Authorization: Bearer ${HF_TOKEN}")
+fi
+
+wget "${WGET_OPTS[@]}" -O "$DEST" "$PARSER_URL"
+
+# ── Validate the download ─────────────────────────────────────────────────────
+# HuggingFace can return a 200 OK HTML redirect page on auth failure or repo
+# restructuring. The `file` command reports "ASCII text" for both HTML and Python,
+# so we inspect the content directly instead.
+#
+# Strategy: check the first 10 lines for at least one Python keyword.
+# An HTML error page will contain "<!DOCTYPE", "<html>", or "Redirecting" instead.
+
+if head -10 "$DEST" | grep -qE '^\s*(import |from |def |class |#)'; then
+  echo "✓ Downloaded and validated: $DEST"
 else
   echo "ERROR: Downloaded file does not look like Python source."
-  echo "       Check your HF_TOKEN or network access and retry."
-  cat "$DEST" | head -5
+  echo "       It may be an HTML redirect or auth error from HuggingFace."
+  echo "       If the repo is gated, set HF_TOKEN and retry."
+  echo ""
+  echo "First 10 lines of downloaded file:"
+  head -10 "$DEST"
+  rm -f "$DEST"
   exit 1
 fi
 

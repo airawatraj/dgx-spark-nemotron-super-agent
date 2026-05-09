@@ -1,6 +1,6 @@
 # METHODOLOGY.md
 ## DGX Spark · Nemotron-3-Super-120B · Single-Node Benchmark
-**Author:** Rajendra Rawat (`airawatraj`) · **Date:** May 8, 2026
+**Author:** Rajendra Singh Rawat (`airawatraj`) · **Date:** May 9, 2026
 
 ---
 
@@ -77,8 +77,8 @@ I was caught in a Catch-22: passing no flags resulted in 400 errors from the age
 The model weights confirmed at 75.03 GiB at load time. At 0.75 utilization:
 - 128 GB × 0.75  = 96 GB reserved by vLLM
 - Model weights  = 75 GB
-- KV cache budget = ~21 GB
-- Free headroom  = ~26 GB (Leaves room for OS, OpenShell K3s clusters, and Tailscale networking).
+- KV cache budget = ~21 GB (96 − 75, allocated within vLLM's reservation)
+- System headroom = ~26 GB net (128 − 96 = 32 GB gross outside vLLM's reservation, minus ~6 GB consumed by OS, OpenShell K3s clusters, and Tailscale networking)
 Attempting to push this to 0.82+ resulted in kernel-level lockups when combined with MTP speculative decoding.
 
 ### Why `--max-num-batched-tokens 16384`

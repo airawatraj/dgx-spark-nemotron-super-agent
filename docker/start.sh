@@ -49,7 +49,20 @@ if docker ps -a --format '{{.Names}}' | grep -q '^spark-brain$'; then
   docker rm spark-brain 2>/dev/null || true
 fi
 
+# ── Build optional env flags ──────────────────────────────────────────────────
+# NGC_API_KEY is only passed if set in the calling environment.
+# Passing an empty string via -e NGC_API_KEY="" can cause unexpected behaviour
+# in some Docker versions (treats it as a literal empty var rather than omitting it).
+NGC_ENV=()
+if [[ -n "${NGC_API_KEY:-}" ]]; then
+  NGC_ENV=(-e "NGC_API_KEY=${NGC_API_KEY}")
+fi
+
 # ── Launch ────────────────────────────────────────────────────────────────────
+# Note on --tool-call-parser qwen3_coder:
+# Routes tool calls without tripping the broken internal chat serving stub in the
+# NVIDIA vLLM fork. Confirmed on vLLM 0.19.2rc1.dev134+gfe9c3d6c5
+# (nightly image sha256:3dbe092e). Behaviour may differ on other builds — see METHODOLOGY.md.
 echo "Starting spark-brain..."
 docker run -d --name spark-brain --gpus all \
   --restart=unless-stopped \
@@ -59,7 +72,7 @@ docker run -d --name spark-brain --gpus all \
   -e VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 \
   -e VLLM_USE_FLASHINFER_MOE_FP4=0 \
   -e HF_HUB_OFFLINE=1 \
-  -e NGC_API_KEY="${NGC_API_KEY:-}" \
+  "${NGC_ENV[@]}" \
   -v "$NIM_CACHE:/nim-cache" \
   -v "$PARSER:/app/super_v3_reasoning_parser.py" \
   vllm/vllm-openai@sha256:3dbe092ec5b2cef63b6104d33fa75d6ce53a7870962529ada69f78bbbc38e776 \
