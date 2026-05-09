@@ -1,6 +1,6 @@
 # Running a Real Local AI Agent on DGX Spark · Nemotron-3-Super-120B
 
-I bought a DGX Spark to do real work: running serious local AI agents and training foundation models from scratch — not to run benchmarks. 
+I bought a DGX Spark to do real work: running serious local AI agents and training foundation models from scratch — not to run benchmarks.
 
 *(If you are curious about the training side of this hardware, check out [SageGPT](https://github.com/airawatraj/sage-gpt), my 7.5M parameter Sanskrit SLM trained entirely from scratch on this same machine).*
 
@@ -14,7 +14,7 @@ wanted to understand why mine was different. They're a side effect, not the goal
 
 ---
 
-## Real Work - Not Just Benchmarks
+## Real Work — Not Just Benchmarks
 
 ### Solving a puzzle the community said no local LLM could crack
 
@@ -52,18 +52,19 @@ analyzing the vLLM codebase — on the same Spark it is running on.
 <p align="center">
   <img src="./assets/vscode_cogni_brain_agent.png" width="600" alt="VS Code Agent">
 </p>
+
 ### NemoHermes TUI
 
 <p align="center">
   <img src="./assets/nemohermes_tui_active.png" width="600" alt="NemoHermes TUI">
 </p>
+
 ---
 
 ## Benchmark Results
 
 > NemoHermes agent and Open WebUI were **running alongside** during all benchmark runs.
-> TPS includes both reasoning (`<think>`) and answer tokens.
-
+> TPS includes both reasoning (`<think>`) and answer tokens. Isolated TPS would be higher.
 
 | Metric | Result |
 |---|---|
@@ -91,18 +92,31 @@ analyzing the vLLM codebase — on the same Spark it is running on.
 ## Compared to Prior Published Results
 
 > NemoHermes agent and Open WebUI were **running alongside** during all benchmark runs.
-> TPS includes both reasoning (`<think>`) and answer tokens.
+> TPS includes both reasoning (`<think>`) and answer tokens. Isolated TPS would be higher.
+>
+> **Methodology note:** The [spark-arena leaderboard](https://spark-arena.com/leaderboard) uses a standardised `tg128` test
+> (128 fixed output tokens, no production services). This benchmark used 300 output tokens
+> with NemoHermes and Open WebUI running alongside. Methodologies are not directly comparable.
 
 | Who | TPS | Stack | Context | Concurrent | Production services |
 |---|---|---|---|---|---|
-| **This work** | **23.2** | NVFP4 + vLLM | 131K | 4 | NemoHermes + Open WebUI |
+| **Cogni-Brain (airawatraj)** | **23.2** | NVFP4 + vLLM | 131K | 4 | NemoHermes + Open WebUI |
+| Seth Hobson (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 | none |
+| Saiyam Pathak | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
+| Avarok | 19 | NVFP4 + vLLM | unknown | 1 | none |
 | Eugr | 16.55 | NVFP4 + vLLM | 256K | unknown | none |
 | josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 | none |
-| Avarok | 19 | NVFP4 + vLLM | unknown | 1 | none |
-| Saiyam Pathak | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
 
-**AFAIK best documented single-Spark result for Nemotron 3 Super as of May 2026 — across both vLLM and llama.cpp stacks.**
-Measured with exact `completion_tokens` from vLLM. Happy to be proved wrong — let's extract max juice out of Spark.
+The highest single-node single-session result in the [spark-arena community leaderboard](https://spark-arena.com/leaderboard)
+as of May 9, 2026 is 21.66 TPS (tg128, vLLM, NVFP4, Single Node, no production services).
+This setup measured 23.2 TPS with NemoHermes and Open WebUI running alongside —
+isolated TPS would be higher. Measured with exact `completion_tokens` from vLLM's
+streaming usage API. Happy to be proved wrong — let's extract max juice out of Spark.
+
+<p align="center">
+  <img src="./assets/spark_arena_leaderboard.png" width="800" alt="spark-arena community leaderboard — Single Node NVFP4 vLLM results as of May 9 2026">
+  <br><i>spark-arena community leaderboard — Single Node, NVFP4, vLLM, concurrency 1 — May 9, 2026</i>
+</p>
 
 ---
 
@@ -110,7 +124,7 @@ Measured with exact `completion_tokens` from vLLM. Happy to be proved wrong — 
 
 - **NVIDIA DGX Spark** (GB10 Grace-Blackwell Superchip)
 - **128 GB unified memory** (CPU + GPU shared)
-- **Kernel-Level Sandboxing:** The NemoHermes agent stack operates inside a heavily restricted OpenShell environment utilizing K3s, Landlock, and strict seccomp profiles to ensure safe isolation during autonomous code generation.
+- **Kernel-Level Sandboxing:** The NemoHermes agent stack operates inside an OpenShell environment with K3s, Landlock, and seccomp profiles for isolation during autonomous code generation.
 - GPU operating under 75°C throughout
 
 > **Note (Software Limitation):** While the GB10 chip features 5th-gen Tensor Cores capable of FP4, the current vLLM/FlashInfer ecosystem lacks native FP4 MoE kernels for the desktop SM120/SM121 architecture. NVFP4 currently provides weight compression (fitting the model in 128 GB) but forces a fallback to the Marlin dequantization path for compute. See [METHODOLOGY.md](METHODOLOGY.md) for details.
@@ -119,7 +133,7 @@ Measured with exact `completion_tokens` from vLLM. Happy to be proved wrong — 
 
 ## Quick Start
 
-> ⚠️ Warning: The setup scripts disable system swap to prevent unified memory thrashing. This is a system-level change
+> ⚠️ **Warning:** The setup scripts disable system swap to prevent unified memory thrashing. This is a system-level change.
 
 ```bash
 # 1. Prerequisites
@@ -149,6 +163,7 @@ uv run benchmark/benchmark_spark.py
 dgx-spark-nemotron-super-agent/
 ├── README.md                    ← this file
 ├── METHODOLOGY.md               ← full measurement methodology
+├── CITATION.cff                 ← citation metadata
 ├── setup/
 │   ├── install.sh               ← prerequisites, swap disable
 │   └── download_parser.sh       ← fetch super_v3_reasoning_parser.py
