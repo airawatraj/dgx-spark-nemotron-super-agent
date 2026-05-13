@@ -76,7 +76,7 @@ docker run -d --name spark-brain --gpus all \
   -v "$NIM_CACHE:/nim-cache" \
   -v "$PARSER:/app/super_v3_reasoning_parser.py" \
   vllm/vllm-openai@sha256:3dbe092ec5b2cef63b6104d33fa75d6ce53a7870962529ada69f78bbbc38e776 \
-    --model "$MODEL_PATH" \
+    --model "/nim-cache${MODEL_PATH#$NIM_CACHE}" \
     --served-model-name Cogni-Brain \
     --host 0.0.0.0 --port 8000 \
     --async-scheduling \
