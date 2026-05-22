@@ -95,12 +95,12 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 
 | Metric | Result |
 |---|---|
-| Single session TPS (average) | **24.3 tok/s** |
-| Single session TPS (peak) | **24.4 tok/s** |
-| 4 concurrent sessions (total) | **54.6 tok/s** |
-| 3 concurrent sessions (total) | **40.9 tok/s** |
+| Single session TPS (average) | **24.1 tok/s** |
+| Single session TPS (peak) | **24.8 tok/s** |
+| 4 concurrent sessions (total) | **53.9 tok/s** |
+| 3 concurrent sessions (total) | **41.2 tok/s** |
 | Max context window | **130,753 tokens** |
-| TTFT (average) | **212ms** |
+| TTFT (steady state) | **229ms** |
 
 <p align="center">
   <img src="./assets/benchmark_test_1-3.png" width="600" alt="Benchmark Test 1-3">
@@ -151,16 +151,16 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 > and are not directly comparable for agentic workloads.
 
 
-| Who | TPS | Stack | Context | Concurrent | Production services |
-|---|---|---|---|---|---|
-| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 | none (spark-arena standard) |
-| **Cogni-Brain (airawatraj) — custom script** | **24.3** | NVFP4 + vLLM | 131K | 1 | none |
-| **Cogni-Brain (airawatraj) — custom script concurrent** | **54.6** | NVFP4 + vLLM | 131K | 4 | none |
-| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 | none |
-| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 | none |
-| [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
-| [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown | none |
-| josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 | none |
+| Who | TPS | Stack | Context | Concurrent |
+|---|---|---|---|---|
+| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) — custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) — custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
+| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 |
+| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 |
+| [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 |
+| [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown |
+| josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 |
 
 The official spark-arena submission achieved **23.45 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
 the highest single-node result published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 22, 2026.
@@ -203,8 +203,12 @@ docker logs -f spark-brain | grep "Application startup complete"
 # 6. Configure OpenShell Gateway Timeout (Critical for heavy agentic tasks)
 openshell inference set -g nemoclaw --provider compatible-endpoint --model Cogni-Brain --timeout 600
 
-# 7. Run benchmark
+# 7. Run benchmarks
 uv run benchmark/benchmark_speed.py
+# Optional: full spark-arena-style overnight sweep
+uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_full.csv
+# Optional: tool-use capability benchmark
+uv run benchmark/benchmark_smarts.py
 ```
 
 ---

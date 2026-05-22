@@ -144,6 +144,18 @@ def test_baseline_tps(host, port, model, debug=False):
     runs = 3
     results = []
 
+    print("  Running warmup request (not included in averages)...")
+    warmup_ttft, warmup_tps, warmup_tokens, _, warmup_err = stream_completion(
+        host, port, model, prompt, max_tokens=300, debug=debug
+    )
+    if warmup_err:
+        print(c(f"  ⚠ Warmup failed: {warmup_err}", "yellow"))
+    else:
+        print(
+            f"  Warmup: TTFT={c(str(warmup_ttft)+'ms', 'yellow')}  "
+            f"TPS={c(str(warmup_tps), 'green')}  tokens={warmup_tokens}"
+        )
+
     print(f"  Running {runs} consecutive requests...")
     for i in range(runs):
         ttft, tps, tokens, _, err = stream_completion(host, port, model, prompt, max_tokens=300, debug=debug)
@@ -158,9 +170,11 @@ def test_baseline_tps(host, port, model, debug=False):
         avg_tps = round(statistics.mean([r[1] for r in results]), 1)
         avg_ttft = round(statistics.mean([r[0] for r in results]))
         peak_tps = max([r[1] for r in results])
+        if warmup_ttft is not None and not warmup_err:
+            result_line("Warmup TTFT", warmup_ttft, "ms", "yellow")
         result_line("Average TPS", avg_tps, "tok/s", "green")
         result_line("Peak TPS", peak_tps, "tok/s", "green")
-        result_line("Average TTFT", avg_ttft, "ms", "yellow")
+        result_line("Average TTFT (steady state)", avg_ttft, "ms", "yellow")
         return avg_tps, peak_tps
     return 0, 0
 

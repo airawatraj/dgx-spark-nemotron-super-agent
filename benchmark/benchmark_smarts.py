@@ -48,6 +48,8 @@ def result_line(label, value, color="green"):
 
 def build_command(args):
     command = [
+        "uv",
+        "run",
         "tool-eval-bench",
         "--base-url",
         args.base_url,
@@ -116,8 +118,8 @@ def main():
         print()
         print(f"  {c('Runs deterministic evaluation across repeated trials.', 'yellow')}")
 
-    if shutil.which("tool-eval-bench") is None:
-        print(f"\n{c('✗ tool-eval-bench is not installed or not on PATH', 'red')}")
+    if shutil.which("uv") is None:
+        print(f"\n{c('✗ uv is not installed or not on PATH', 'red')}")
         sys.exit(1)
 
     command = build_command(args)
@@ -134,7 +136,7 @@ def main():
         print(f"\n{c('Benchmark interrupted by user', 'yellow')}")
         sys.exit(130)
     except FileNotFoundError:
-        print(f"\n{c('✗ Failed to start tool-eval-bench', 'red')}")
+        print(f"\n{c('✗ Failed to start uv or tool-eval-bench', 'red')}")
         sys.exit(1)
 
     if completed.returncode == 0:

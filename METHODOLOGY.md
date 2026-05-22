@@ -158,10 +158,11 @@ All results use exact `completion_tokens` from vLLM's streaming usage API.
 
 | Run | TTFT | TPS | Output tokens |
 |---|---|---|---|
-| 1 | 218ms | 24.4 | 300 |
-| 2 | 208ms | 24.2 | 300 |
-| 3 | 210ms | 24.4 | 300 |
-| **Average** | **212ms** | **24.3** | |
+| Warmup | 208ms | 23.7 | 300 |
+| 1 | 269ms | 24.0 | 300 |
+| 2 | 209ms | 23.5 | 300 |
+| 3 | 209ms | 24.8 | 300 |
+| **Average (steady state)** | **229ms** | **24.1** | |
 
 ### Concurrent Sessions (Custom Script)
 
@@ -170,10 +171,10 @@ time for the batch, rather than summing per-request TPS values.
 
 | Sessions | Total TPS | Per-session TPS |
 |---|---|---|
-| 1 | 22.6 | 22.6 |
-| 2 | 36.3 | 18.1 |
-| 3 | 40.9 | 13.6 |
-| 4 | 54.6 | 13.7 |
+| 1 | 23.5 | 23.5 |
+| 2 | 35.8 | 17.9 |
+| 3 | 41.2 | 13.7 |
+| 4 | 53.9 | 13.5 |
 
 ---
 
@@ -193,16 +194,16 @@ time for the batch, rather than summing per-request TPS values.
 
 ## Comparison With Prior Published Results
 
-| Who | TPS | Stack | Context | Concurrent | Production services |
-|---|---|---|---|---|---|
-| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 | none (spark-arena standard) |
-| **Cogni-Brain (airawatraj) — custom script** | **24.3** | NVFP4 + vLLM | 131K | 1 | none |
-| **Cogni-Brain (airawatraj) — custom script concurrent** | **54.6** | NVFP4 + vLLM | 131K | 4 | none |
-| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 | none |
-| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 | none |
-| [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
-| [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown | none |
-| josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 | none |
+| Who | TPS | Stack | Context | Concurrent |
+|---|---|---|---|---|
+| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) — custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) — custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
+| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 |
+| [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 |
+| [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 |
+| [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown |
+| josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 |
 
 > **Note:** spark-arena tg128 results use 128 fixed output tokens with no production services.
 > The official submission matches this methodology exactly.
