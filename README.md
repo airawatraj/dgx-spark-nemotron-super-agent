@@ -118,14 +118,14 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 
 | Metric | Result |
 |---|---|
-| Overall score | **87 / 100** |
-| Rating | **★★★★ Good** |
+| Overall score | **93 / 100** |
+| Rating | **★★★★★ Excellent** |
 | Scenarios | **15** |
-| Passed / Partial / Failed | **12 / 2 / 1** |
-| Best categories | **Tool Selection 100%, Multi-Step Chains 100%** |
+| Passed / Partial / Failed | **14 / 0 / 1** |
+| Best categories | **Tool Selection 100%, Multi-Step Chains 100%, Restraint & Refusal 100%, Error Recovery 100%** |
 | Weakest category | **Parameter Precision 67%** |
-| Responsiveness | **21 / 100** |
-| Deployability | **67 / 100** |
+| Responsiveness | **24 / 100** |
+| Deployability | **72 / 100** |
 
 <p align="center">
   <img src="./assets/benchmark_smarts_1.png" width="600" alt="Tool-eval benchmark summary 1">
