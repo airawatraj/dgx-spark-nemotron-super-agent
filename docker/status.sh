@@ -58,4 +58,8 @@ fi
 # ── Last 5 log lines ──────────────────────────────────────────────────────────
 echo ""
 echo "=== Recent logs ==="
-docker logs spark-brain --tail 5 2>&1 | sed 's/^/  /'
+if docker ps -a --format '{{.Names}}' | grep -q '^spark-brain$'; then
+  docker logs spark-brain --tail 5 2>&1 | sed 's/^/  /'
+else
+  echo "  No spark-brain container found"
+fi

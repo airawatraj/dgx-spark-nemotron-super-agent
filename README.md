@@ -87,17 +87,18 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
   <br><i>spark-arena community leaderboard — Single Node, NVFP4, vLLM, concurrency 1 — May 14, 2026</i>
 </p>
 
-### Early Benchmark (Custom Script, Production Stack Running)
+### Custom Script Benchmark (vLLM Only)
 
-> These results were measured with the custom `benchmark_spark.py` script with NemoHermes and Open WebUI running alongside.
+> These results were measured with the custom `benchmark_speed.py` script with NemoHermes and Open WebUI containers stopped.
 > TPS includes both reasoning (`<think>`) and answer tokens. Isolated TPS would be higher.
+> Concurrent-session figures below use the corrected aggregate-throughput calculation in `benchmark_speed.py`.
 
 | Metric | Result |
 |---|---|
-| Single session TPS (average) | **23.2 tok/s** |
-| Single session TPS (peak) | **23.6 tok/s** |
-| 4 concurrent sessions (total) | **55.3 tok/s** |
-| 3 concurrent sessions (total) | **41.7 tok/s** |
+| Single session TPS (average) | **24.3 tok/s** |
+| Single session TPS (peak) | **24.4 tok/s** |
+| 4 concurrent sessions (total) | **54.6 tok/s** |
+| 3 concurrent sessions (total) | **40.9 tok/s** |
 | Max context window | **130,753 tokens** |
 | TTFT (average) | **212ms** |
 
@@ -107,6 +108,35 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 
 <p align="center">
   <img src="./assets/benchmark_test_4-5.png" width="600" alt="Benchmark Test 4-5">
+</p>
+
+### Smarts Evaluation (Tool-Use Benchmark)
+
+> Benchmarked using `benchmark_smarts.py` in short mode against the local vLLM endpoint.
+> This is a capability check for tool selection, parameter precision, multi-step chains,
+> refusal behaviour, and recovery from malformed or empty tool responses.
+
+| Metric | Result |
+|---|---|
+| Overall score | **87 / 100** |
+| Rating | **★★★★ Good** |
+| Scenarios | **15** |
+| Passed / Partial / Failed | **12 / 2 / 1** |
+| Best categories | **Tool Selection 100%, Multi-Step Chains 100%** |
+| Weakest category | **Parameter Precision 67%** |
+| Responsiveness | **21 / 100** |
+| Deployability | **67 / 100** |
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_1.png" width="600" alt="Tool-eval benchmark summary 1">
+</p>
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_2.png" width="600" alt="Tool-eval benchmark summary 2">
+</p>
+
+<p align="center">
+  <img src="./assets/benchmark_smarts_3.png" width="600" alt="Tool-eval benchmark summary 3">
 </p>
 
 ---
@@ -124,8 +154,8 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 | Who | TPS | Stack | Context | Concurrent | Production services |
 |---|---|---|---|---|---|
 | **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 | none (spark-arena standard) |
-| **Cogni-Brain (airawatraj) — with stack** | **23.2** | NVFP4 + vLLM | 131K | 1 | NemoHermes + Open WebUI |
-| **Cogni-Brain (airawatraj) — concurrent** | **55.3** | NVFP4 + vLLM | 131K | 4 | NemoHermes + Open WebUI |
+| **Cogni-Brain (airawatraj) — custom script** | **24.3** | NVFP4 + vLLM | 131K | 1 | none |
+| **Cogni-Brain (airawatraj) — custom script concurrent** | **54.6** | NVFP4 + vLLM | 131K | 4 | none |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 | none |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 | none |
 | [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
@@ -133,7 +163,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 | josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 | none |
 
 The official spark-arena submission achieved **23.45 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
-the highest single-node result published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 14, 2026.
+the highest single-node result published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 22, 2026.
 TPS remains stable from 0 to 100,000 tokens of context with no performance cliff observed.
 Happy to be proved wrong - let's extract max juice out of Spark.
 
@@ -158,20 +188,23 @@ Happy to be proved wrong - let's extract max juice out of Spark.
 # 1. Prerequisites
 bash setup/install.sh
 
-# 2. Download reasoning parser
+# 2. Download model weights
+bash setup/download_model.sh
+
+# 3. Download reasoning parser
 bash setup/download_parser.sh
 
-# 3. Start vLLM
+# 4. Start vLLM
 bash docker/start.sh
 
-# 4. Wait for server to be ready (~10 min)
+# 5. Wait for server to be ready (~10 min)
 docker logs -f spark-brain | grep "Application startup complete"
 
-# 5. Configure OpenShell Gateway Timeout (Critical for heavy agentic tasks)
+# 6. Configure OpenShell Gateway Timeout (Critical for heavy agentic tasks)
 openshell inference set -g nemoclaw --provider compatible-endpoint --model Cogni-Brain --timeout 600
 
-# 6. Run benchmark
-uv run benchmark/benchmark_spark.py
+# 7. Run benchmark
+uv run benchmark/benchmark_speed.py
 ```
 
 ---
@@ -186,13 +219,16 @@ dgx-spark-nemotron-super-agent/
 ├── CITATION.cff                 ← citation metadata
 ├── setup/
 │   ├── install.sh               ← prerequisites, swap disable
+│   ├── download_model.sh        ← fetch model weights into NIM cache
 │   └── download_parser.sh       ← fetch super_v3_reasoning_parser.py
 ├── docker/
 │   ├── start.sh                 ← launch vLLM (final production command)
 │   ├── stop.sh                  ← stop and remove container
 │   └── status.sh                ← health check + memory + VmSwap
 ├── benchmark/
-│   └── benchmark_spark.py       ← TPS, TTFT, context window benchmark
+│   ├── benchmark_speed.py       ← TPS, TTFT, context window benchmark
+│   ├── benchmark_speed_arena.py ← long spark-arena-style llama-benchy sweep
+│   └── benchmark_smarts.py      ← tool-eval-bench capability benchmark
 └── assets/                      ← terminal output and real-use images
 ```
 

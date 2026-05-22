@@ -9,8 +9,9 @@ echo "=== DGX Spark Setup ==="
 # ── 1. Disable swap permanently ───────────────────────────────────────────────
 echo "[1/4] Disabling swap..."
 sudo swapoff -a
-# Comment out swap entry in fstab to survive reboots
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/' /etc/fstab
+# Comment out active swap entries in fstab to survive reboots.
+# Match any whitespace-separated mount rows, not just lines with literal spaces.
+sudo sed -ri '/^[[:space:]]*#/! s@^([[:space:]]*[^[:space:]#]+[[:space:]]+[^[:space:]]+[[:space:]]+swap[[:space:]].*)$@#\1@' /etc/fstab
 free -h | grep Swap
 echo "    Swap disabled."
 
@@ -40,4 +41,4 @@ fi
 
 echo ""
 echo "=== Setup complete ==="
-echo "Next: bash setup/download_parser.sh"
+echo "Next: bash setup/download_model.sh"

@@ -6,7 +6,7 @@
 """
 DGX Spark / Nemotron-3-Super Benchmark
 Tests TPS, TTFT, and maximum usable context window.
-Usage: uv run benchmark_spark.py [--host localhost] [--port 8000] [--model Cogni-Brain]
+Usage: uv run benchmark/benchmark_speed.py [--host localhost] [--port 8000] [--model Cogni-Brain]
 """
 
 import argparse
@@ -130,10 +130,8 @@ def stream_completion(host, port, model, prompt, max_tokens=200, timeout=120, de
     # otherwise estimate from character count (~4 chars/token for English)
     if usage_tokens and usage_tokens > 0:
         tokens = usage_tokens
-        token_source = "exact"
     else:
         tokens = max(1, len(full_text) // 4)
-        token_source = "estimated"
 
     tps = tokens / generation_time if generation_time > 0 else 0
     return round(ttft_ms), round(tps, 1), tokens, full_text, None
@@ -192,7 +190,6 @@ def test_tps_vs_length(host, port, model):
 
 def test_concurrent(host, port, model, max_concurrent=4):
     header("TEST 3 — Concurrent Sessions TPS")
-    prompt = "Explain the history of the Roman Empire in detail."
     prompts_list = [
         "Explain the history of the Roman Empire in detail.",
         "Describe how neural networks learn from data.",
@@ -213,7 +210,7 @@ def test_concurrent(host, port, model, max_concurrent=4):
             if err:
                 errors.append(err)
             else:
-                results[idx] = tps
+                results[idx] = (tokens, tps)
 
         threads = [threading.Thread(target=run_request, args=(i,)) for i in range(n)]
         t_start = time.perf_counter()
@@ -225,8 +222,9 @@ def test_concurrent(host, port, model, max_concurrent=4):
 
         valid = [r for r in results if r is not None]
         if valid:
-            total_tps = round(sum(valid), 1)
-            per_session = round(statistics.mean(valid), 1)
+            total_tokens = sum(tokens for tokens, _ in valid)
+            total_tps = round(total_tokens / elapsed, 1) if elapsed > 0 else 0
+            per_session = round(total_tps / n, 1)
             color = "green" if per_session >= 10 else "yellow" if per_session >= 6 else "red"
             print(f"  {str(n)+' session(s)'.ljust(14)} "
                   f"total={c(str(total_tps)+' tok/s', color).ljust(22)} "
@@ -333,7 +331,7 @@ def print_summary(avg_tps, peak_tps, max_context, host, port, model):
 def main():
     parser = argparse.ArgumentParser(
         description="Benchmark DGX Spark vLLM setup",
-        epilog="Run with: uv run benchmark_spark.py"
+        epilog="Run with: uv run benchmark/benchmark_speed.py"
     )
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--port", default=8000, type=int)

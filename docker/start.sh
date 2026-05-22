@@ -33,7 +33,7 @@ SWAP=$(free | awk '/^Swap:/ {print $2}')
 if [[ "$SWAP" -gt 0 ]]; then
   echo "WARNING: Swap is enabled ($SWAP kB). Disabling permanently now..."
   sudo swapoff -a
-  sudo sed -i '/ swap / s/^\(.*\)$/#\1/' /etc/fstab
+  sudo sed -ri '/^[[:space:]]*#/! s@^([[:space:]]*[^[:space:]#]+[[:space:]]+[^[:space:]]+[[:space:]]+swap[[:space:]].*)$@#\1@' /etc/fstab
   echo "✓ OS Swap disabled and removed from /etc/fstab."
 fi
 

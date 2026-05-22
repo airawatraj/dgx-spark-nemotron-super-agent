@@ -1,6 +1,6 @@
 # METHODOLOGY.md
 ## DGX Spark · Nemotron-3-Super-120B · Single-Node Benchmark
-**Author:** Rajendra Singh Rawat (`airawatraj`) · **Updated:** May 14, 2026
+**Author:** Rajendra Singh Rawat (`airawatraj`) · **Updated:** May 22, 2026
 
 ---
 
@@ -151,26 +151,29 @@ TPS remains stable at 22–23.45 tokens/s from depth 0 to depth 100,000. No perf
 | 65535 | 23.25 |
 | 100000 | **22.40** |
 
-### Early Benchmark (Custom Script, Production Stack Running)
+### Custom Script Benchmark (vLLM Only)
 
-These results were measured with the custom `benchmark_spark.py` script with NemoHermes and Open WebUI running alongside.
+These results were measured with the custom `benchmark_speed.py` script with NemoHermes and Open WebUI containers stopped.
 All results use exact `completion_tokens` from vLLM's streaming usage API.
 
 | Run | TTFT | TPS | Output tokens |
 |---|---|---|---|
-| 1 | 211ms | 23.5 | 300 |
-| 2 | 213ms | 23.6 | 300 |
-| 3 | 212ms | 22.6 | 300 |
-| **Average** | **212ms** | **23.2** | |
+| 1 | 218ms | 24.4 | 300 |
+| 2 | 208ms | 24.2 | 300 |
+| 3 | 210ms | 24.4 | 300 |
+| **Average** | **212ms** | **24.3** | |
 
 ### Concurrent Sessions (Custom Script)
 
+Total TPS is measured as aggregate completion tokens divided by end-to-end wall-clock
+time for the batch, rather than summing per-request TPS values.
+
 | Sessions | Total TPS | Per-session TPS |
 |---|---|---|
-| 1 | 22.4 | 22.4 |
-| 2 | 35.4 | 17.7 |
-| 3 | 41.7 | 13.9 |
-| 4 | 55.3 | 13.8 |
+| 1 | 22.6 | 22.6 |
+| 2 | 36.3 | 18.1 |
+| 3 | 40.9 | 13.6 |
+| 4 | 54.6 | 13.7 |
 
 ---
 
@@ -193,8 +196,8 @@ All results use exact `completion_tokens` from vLLM's streaming usage API.
 | Who | TPS | Stack | Context | Concurrent | Production services |
 |---|---|---|---|---|---|
 | **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 | none (spark-arena standard) |
-| **Cogni-Brain (airawatraj) — with stack** | **23.2** | NVFP4 + vLLM | 131K | 1 | NemoHermes + Open WebUI |
-| **Cogni-Brain (airawatraj) — concurrent** | **55.3** | NVFP4 + vLLM | 131K | 4 | NemoHermes + Open WebUI |
+| **Cogni-Brain (airawatraj) — custom script** | **24.3** | NVFP4 + vLLM | 131K | 1 | none |
+| **Cogni-Brain (airawatraj) — custom script concurrent** | **54.6** | NVFP4 + vLLM | 131K | 4 | none |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 | none |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 | none |
 | [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 | none |
