@@ -48,7 +48,10 @@ def result_line(label, value, color="green"):
 def build_command(args):
     return [
         "uv",
+        "tool",
         "run",
+        "--from",
+        "llama-benchy",
         "llama-benchy",
         "--base-url",
         args.base_url,

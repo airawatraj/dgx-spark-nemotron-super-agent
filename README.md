@@ -67,6 +67,7 @@ analyzing the vLLM codebase - on the same Spark it is running on.
 
 > Benchmarked using [llama-benchy](https://github.com/eugr/llama-benchy) with the standardised spark-arena methodology.
 > NemoHermes and Open WebUI containers were stopped during this run. Only spark-brain (vLLM) running.
+> Published result recorded with `llama-benchy v0.3.8.dev2+gff162bcfc`.
 
 | Metric | Result |
 |---|---|
@@ -115,6 +116,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 > Benchmarked using `benchmark_smarts.py` in short mode against the local vLLM endpoint.
 > This is a capability check for tool selection, parameter precision, multi-step chains,
 > refusal behaviour, and recovery from malformed or empty tool responses.
+> Published result recorded with `tool-eval-bench v1.7.0`.
 
 | Metric | Result |
 |---|---|
@@ -197,8 +199,8 @@ bash setup/download_parser.sh
 # 4. Start vLLM
 bash docker/start.sh
 
-# 5. Wait for server to be ready (~10 min)
-docker logs -f spark-brain | grep "Application startup complete"
+# 5. Follow startup logs (~10 min)
+docker logs -f spark-brain
 
 # 6. Configure OpenShell Gateway Timeout (Critical for heavy agentic tasks)
 openshell inference set -g nemoclaw --provider compatible-endpoint --model Cogni-Brain --timeout 600
@@ -210,6 +212,14 @@ uv run benchmark/benchmark_speed_arena.py --save-result benchmark/results_full.c
 # Optional: tool-use capability benchmark
 uv run benchmark/benchmark_smarts.py
 ```
+
+The `benchmark_speed_arena.py` and `benchmark_smarts.py` wrappers fetch
+`llama-benchy` and `tool-eval-bench` through `uv` on demand, so no separate
+global install step is required.
+
+These wrappers intentionally resolve the latest available tool version at run
+time. If you are comparing against the published numbers above, note the exact
+tool versions recorded with those results.
 
 ---
 

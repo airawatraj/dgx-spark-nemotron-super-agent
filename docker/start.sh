@@ -99,13 +99,7 @@ docker run -d --name spark-brain --gpus all \
     --tool-call-parser qwen3_coder
 
 echo ""
-echo "Container started. Waiting for server to be ready (~10 minutes)..."
-echo "Watch progress: docker logs -f spark-brain"
-echo ""
-
-# Wait for ready signal
-timeout 900 bash -c '
-  until curl -sf http://localhost:8000/health &>/dev/null; do
-    sleep 5
-  done
-' && echo "✓ Server ready at http://localhost:8000" || echo "Timeout — check docker logs spark-brain"
+echo "Container started."
+echo "Startup can take around 10 minutes."
+echo "Next: docker logs -f spark-brain"
+echo "Ready check: curl -sf http://localhost:8000/health && echo OK"

@@ -19,7 +19,7 @@ echo "Downloading to $NIM_CACHE..."
 echo "This will download ~75GB of weights."
 echo "TIP: If you are on an SSH session, consider running this inside tmux (e.g., tmux new -t nemotron)."
 
-docker run -it --rm \
+docker run --rm \
   --runtime=nvidia --gpus all \
   -v "$NIM_CACHE:/opt/nim/.cache" \
   -e NGC_API_KEY="$NGC_API_KEY" \

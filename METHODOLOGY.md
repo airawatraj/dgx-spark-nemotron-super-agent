@@ -20,6 +20,7 @@
 | Model checkpoint | `nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` (`rl-030326-nvfp4`) |
 | Reasoning parser | `super_v3_reasoning_parser.py` (official NVIDIA HuggingFace release) |
 | Benchmark tool | [llama-benchy](https://github.com/eugr/llama-benchy) v0.3.8.dev2+gff162bcfc |
+| SMARTS tool | `tool-eval-bench` v1.7.0 |
 | Agent Runtime | `NemoHermes` (Proved vastly more stable for real workflows than NemoClaw/OpenClaw) |
 | Open WebUI | Stopped during official benchmark run |
 | OS | Ubuntu 24.04 (DGX OS) |
@@ -72,6 +73,11 @@ llama-benchy --base-url http://localhost:8000/v1 \
   --concurrency 1 2 5 10 \
   --save-result results_full.csv
 ```
+
+> **Version policy:** the convenience wrappers in this repo currently resolve the
+> latest available `llama-benchy` / `tool-eval-bench` release via `uv` at run
+> time rather than pinning a fixed version. The versions listed in this document
+> are the ones used for the published results above.
 
 > **Production services during official run:** NemoHermes and Open WebUI containers were stopped.
 > Only spark-brain (vLLM) was running. This matches the spark-arena standard methodology.

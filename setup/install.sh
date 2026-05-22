@@ -22,7 +22,7 @@ docker version --format 'Docker {{.Server.Version}}' || {
   exit 1
 }
 
-# ── 3. Install uv (for running the benchmark script) ─────────────────────────
+# ── 3. Install uv (for repo-managed benchmark wrappers and scripts) ──────────
 echo "[3/4] Installing uv..."
 if ! command -v uv &>/dev/null; then
   curl -LsSf https://astral.sh/uv/install.sh | sh

@@ -47,8 +47,8 @@ echo ""
 echo "=== KV cache ==="
 METRICS=$(curl -sf http://localhost:8000/metrics 2>/dev/null || echo "")
 if [[ -n "$METRICS" ]]; then
-  KV=$(echo "$METRICS" | grep "gpu_cache_usage_perc" | grep -v "^#" | awk '{printf "%.1f%%", $2*100}')
-  RUNNING=$(echo "$METRICS" | grep "vllm:num_requests_running" | grep -v "^#" | awk '{print $2}')
+  KV=$(printf '%s\n' "$METRICS" | awk '!/^#/ && /gpu_cache_usage_perc/ {printf "%.1f%%", $2 * 100; exit}')
+  RUNNING=$(printf '%s\n' "$METRICS" | awk '!/^#/ && /(^|:)num_requests_running([[:space:]]|$)/ {print $2; exit}')
   echo "  KV cache used:     ${KV:-unknown}"
   echo "  Requests running:  ${RUNNING:-0}"
 else

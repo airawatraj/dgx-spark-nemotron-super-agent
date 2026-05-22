@@ -49,7 +49,10 @@ def result_line(label, value, color="green"):
 def build_command(args):
     command = [
         "uv",
+        "tool",
         "run",
+        "--from",
+        "tool-eval-bench",
         "tool-eval-bench",
         "--base-url",
         args.base_url,
@@ -136,7 +139,7 @@ def main():
         print(f"\n{c('Benchmark interrupted by user', 'yellow')}")
         sys.exit(130)
     except FileNotFoundError:
-        print(f"\n{c('✗ Failed to start uv or tool-eval-bench', 'red')}")
+        print(f"\n{c('✗ Failed to start uv', 'red')}")
         sys.exit(1)
 
     if completed.returncode == 0:
