@@ -11,7 +11,7 @@ repository-code: "https://github.com/airawatraj/dgx-spark-nemotron-super-agent"
 abstract: >-
   A technical implementation and benchmarking suite for running Nemotron-3-Super-120B
   as an autonomous agent on a personal NVIDIA DGX Spark. This repository documents
-  the methodology for achieving 24.3+ TPS custom-script throughput and 23.45 TPS
+  the methodology for achieving 24+ TPS custom-script throughput and 23.45 TPS
   official spark-arena throughput using NVFP4 Marlin quantization, speculative
   decoding, and kernel-level sandboxing via OpenShell/K3s, alongside tool-use
   capability benchmarking.
