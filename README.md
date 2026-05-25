@@ -71,7 +71,7 @@ analyzing the vLLM codebase - on the same Spark it is running on.
 
 | Metric | Result |
 |---|---|
-| Single session TPS (tg128) | **23.45 tok/s** |
+| Single session TPS (tg128) | **23.71 tok/s** |
 | Peak TPS (tg128 c5) | **72.67 tok/s** |
 | Context stability | **Stable 0 → 100K tokens** |
 | Total benchmark tests | 104 |
@@ -155,7 +155,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 
 | Who | TPS | Stack | Context | Concurrent |
 |---|---|---|---|---|
-| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 |
+| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.71** | NVFP4 + vLLM | 131K | 1 |
 | **Cogni-Brain (airawatraj) — custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
 | **Cogni-Brain (airawatraj) — custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 |
@@ -164,7 +164,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 | [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown |
 | josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 |
 
-The official spark-arena submission achieved **23.45 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
+The official spark-arena submission achieved **23.71 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
 the highest single-node result published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 22, 2026.
 TPS remains stable from 0 to 100,000 tokens of context with no performance cliff observed.
 Happy to be proved wrong - let's extract max juice out of Spark.

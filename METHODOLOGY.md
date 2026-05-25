@@ -134,7 +134,7 @@ NemoHermes and Open WebUI containers were stopped. Only spark-brain (vLLM) runni
 
 | Test | TPS (total) | TTFT |
 |---|---|---|
-| tg128 (c1) | **23.45** | — |
+| tg128 (c1) | **23.71** | — |
 | tg128 (c2) | 35.10 | — |
 | tg128 (c5) | 37.78 | — |
 | tg128 (c10) | 37.95 | — |
@@ -145,11 +145,11 @@ Full results: [spark-arena.com/benchmark/sub1778644062716](https://spark-arena.c
 
 ### Context Window Stability
 
-TPS remains stable at 22–23.45 tokens/s from depth 0 to depth 100,000. No performance cliff observed across the full benchmark sweep.
+TPS remains stable at 22–23.71 tokens/s from depth 0 to depth 100,000. No performance cliff observed across the full benchmark sweep.
 
 | Depth | tg128 t/s (c1) |
 |---|---|
-| 0 | 23.45 |
+| 0 | 23.71 |
 | 4096 | 21.95 |
 | 8192 | 22.30 |
 | 16384 | 21.94 |
@@ -202,7 +202,7 @@ time for the batch, rather than summing per-request TPS values.
 
 | Who | TPS | Stack | Context | Concurrent |
 |---|---|---|---|---|
-| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.45** | NVFP4 + vLLM | 131K | 1 |
+| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.71** | NVFP4 + vLLM | 131K | 1 |
 | **Cogni-Brain (airawatraj) — custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
 | **Cogni-Brain (airawatraj) — custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 |
