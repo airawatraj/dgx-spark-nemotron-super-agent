@@ -14,7 +14,7 @@ wanted to understand why mine was different. They're a side effect, not the goal
 
 ---
 
-## Real Work - Not Just Benchmarks
+## Real Work, Not Just Benchmarks
 
 ### Solving a puzzle the community said no local LLM could crack
 
@@ -62,6 +62,8 @@ analyzing the vLLM codebase - on the same Spark it is running on.
 ---
 
 ## Benchmark Results
+
+> Results may vary depending on runtime configuration, concurrency, context length, upstream benchmark versions, memory allocation, thermal conditions, and active background services.
 
 ### Official spark-arena Submission
 
@@ -111,7 +113,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
   <img src="./assets/benchmark_test_4-5.png" width="600" alt="Benchmark Test 4-5">
 </p>
 
-### Smarts Evaluation (Tool-Use Benchmark)
+### Tool-Eval Benchmark
 
 > Benchmarked using `benchmark_smarts.py` in short mode against the local vLLM endpoint.
 > This is a capability check for tool selection, parameter precision, multi-step chains,
@@ -165,9 +167,10 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 | josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 |
 
 The official spark-arena submission achieved **23.71 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
-the highest single-node result published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 22, 2026.
+the highest single-node result I found published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 26, 2026.
+
 TPS remains stable from 0 to 100,000 tokens of context with no performance cliff observed.
-Happy to be proved wrong - let's extract max juice out of Spark.
+Happy to be proved wrong. Let's extract max juice out of Spark.
 
 ---
 
