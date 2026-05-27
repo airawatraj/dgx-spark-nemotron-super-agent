@@ -4,7 +4,7 @@ I bought a DGX Spark to do real work: running serious local AI agents and traini
 
 *(If you are curious about the training side of this hardware, check out [SageGPT](https://github.com/airawatraj/sage-gpt), my 7.5M parameter Sanskrit SLM trained entirely from scratch on this same machine).*
 
-This repo documents what it took to get [Nemotron-3-Super-120B](https://hfviewer.com/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16) actually working
+This repo documents what it took to get [Nemotron-3-Super-120B](https://hfviewer.com/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4) actually working
 for real agentic tasks: building apps autonomously, solving puzzles, writing code.
 
 The benchmarks are here because community results ranged from 16–19.5 TPS and I
