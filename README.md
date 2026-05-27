@@ -4,7 +4,7 @@ I bought a DGX Spark to do real work: running serious local AI agents and traini
 
 *(If you are curious about the training side of this hardware, check out [SageGPT](https://github.com/airawatraj/sage-gpt), my 7.5M parameter Sanskrit SLM trained entirely from scratch on this same machine).*
 
-This repo documents what it took to get Nemotron-3-Super-120B actually working
+This repo documents what it took to get [Nemotron-3-Super-120B](https://hfviewer.com/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16) actually working
 for real agentic tasks: building apps autonomously, solving puzzles, writing code.
 
 The benchmarks are here because community results ranged from 16–19.5 TPS and I
@@ -21,7 +21,7 @@ wanted to understand why mine was different. They're a side effect, not the goal
 I came across a reddit thread that claimed ["There's not a SINGLE local LLM which can solve this logic puzzle"](https://www.reddit.com/r/LocalLLaMA/comments/1mblq5g/theres_not_a_single_local_llm_which_can_solve/) -
 only o3 could do it at the time of posting.
 
-Cogni-Brain solved it locally in 3 minutes.
+Cogni-Brain solved it locally in 3 minutes. (and [Cogni-Brain2](https://github.com/airawatraj/dgx-spark-qwen-super-agent) in about 30 seconds)
 
 <p align="center">
   <img src="./assets/openwebui_logic_puzzle.png" width="600" alt="Logic Puzzle Solution">
