@@ -53,8 +53,16 @@ analyzing the vLLM codebase - on the same Spark it is running on.
   <img src="./assets/vscode_cogni_brain_agent.png" width="600" alt="VS Code Agent">
 </p>
 
-### NemoHermes TUI
+### Multiple Agentic Interfaces
 
+Cogni-Brain is framework-agnostic and comfortably drives various agent environments on the local hardware.
+
+**Claude Code CLI**
+<p align="center">
+  <img src="./assets/claude_code_tui_chess_build.png" width="600" alt="Claude Code running Cogni-Brain">
+</p>
+
+**NemoHermes TUI**
 <p align="center">
   <img src="./assets/nemohermes_tui_active.png" width="600" alt="NemoHermes TUI">
 </p>
