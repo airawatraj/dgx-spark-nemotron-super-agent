@@ -12,6 +12,10 @@ wanted to understand why mine was different. They're a side effect, not the goal
 
 > ⚠️ **Personal workstation setup. Not for enterprise use. Use at your own risk.**
 
+> **July 2026 update:** I re-tested the newer public vLLM / DGX Spark stack.
+> Result: this repo still holds. For first-time users: start with the repo
+> as-is. For details, see
+> [`OFFICIAL_STACK_EXPERIMENT_JULY2026.md`](./OFFICIAL_STACK_EXPERIMENT_JULY2026.md).
 ---
 
 ## Real Work, Not Just Benchmarks
