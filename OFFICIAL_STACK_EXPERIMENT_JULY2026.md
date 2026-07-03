@@ -12,46 +12,29 @@
 
 ## TL;DR
 
-Does the new public vLLM / DGX Spark guidance change the required setup for
-running Nemotron-3-Super-120B-A12B-NVFP4 well on a single DGX Spark?
+Does the newer public vLLM / DGX Spark guidance replace the setup documented
+in this repo?
 
-**No - not materially.**
+**No. The recommended setup remains this repo's original tuned path.**
 
-The later public stack validates the original methodology more than it replaces
-it. The main quality-of-life improvement is parser ergonomics: in the vLLM
-blog / NGC path tested here, the external `super_v3_reasoning_parser.py`
-plugin is no longer required because the built-in parser works:
-
-```bash
---reasoning-parser nemotron_v3
-```
-
-However, this is image/version-specific. The Hugging Face model card still
-documents a plugin-based `super_v3` parser path for some vLLM 0.20.0 runs, so
-the safest statement is:
-
-> The parser plugin is no longer required for the working NGC/vLLM path tested
-> in this repo. It may still appear in other official examples.
-
-Everything else from the original war story still matters.
-
-The best July 2026 result is still the original repo-style configuration:
-NGC vLLM image, MARLIN FP4 path, FP8 KV cache, MTP speculative decoding,
-conservative memory allocation, explicit batching limits, and
-`qwen3_coder` for tool-call parsing.
+The July 2026 re-test shows that the newer public stack is useful, but it does
+not beat the original repo-style run on the same DGX Spark.
 
 | Path | Result |
 |---|---:|
-| Public vLLM image baseline, intentionally without Spark-specific tuning | **16.5 tok/s** |
-| Public image + Spark tuning | **22.6 tok/s** |
+| Public vLLM image baseline, no Spark-specific tuning | **16.5 tok/s** |
+| Public vLLM image + Spark tuning | **22.6 tok/s** |
 | NGC image + original repo tuning | **23.6 tok/s avg / 24.3 peak** |
-| Tool-eval score on best July config | **90 / 100** |
-| Original May 2026 repo score | **93 / 100** |
+| Best July tool-eval result | **90 / 100** |
+| Original May 2026 tool-eval result | **93 / 100** |
 
-The conclusion is simple:
+One setup step is simpler now: in the NGC/vLLM path tested here,
+`--reasoning-parser nemotron_v3` works without the old external
+`super_v3_reasoning_parser.py` plugin.
 
-> The official/public stack did not obsolete this repo.
-> It validated the repo.
+The main lesson did not change: for a first-time user, start with
+[`METHODOLOGY.md`](./METHODOLOGY.md). This file is the July 2026 validation
+run, not a replacement runbook.
 
 ---
 
@@ -499,7 +482,7 @@ On this DGX Spark, it delivered the best combination of:
 - 90/100 tool-eval score
 - OpenAI-compatible serving for NemoHermes / local agents
 
-### 5. One real simplification: the parser plugin is no longer needed here
+### 5. The reasoning parser setup is simpler now
 
 The original setup required an external parser plugin:
 
@@ -507,17 +490,14 @@ The original setup required an external parser plugin:
 super_v3_reasoning_parser.py
 ```
 
-For the NGC/vLLM path tested here, that file is no longer needed.
-
-Use the built-in parser:
+For the NGC/vLLM path tested here, the built-in parser works:
 
 ```bash
 --reasoning-parser nemotron_v3
 ```
 
-Important nuance: the Hugging Face model card may still show plugin-based
-examples for other image/version combinations. Treat parser support as
-version-specific.
+That removes one setup step, but it does not change the main result: the
+original repo tuning remains the best working path found in this experiment.
 
 ### 6. The FP4 warning is expected in this tested stack, not fatal
 
@@ -594,11 +574,7 @@ The rest of the war story carries forward.
 A full Spark Arena-style `llama-benchy` run was also captured for community
 reference.
 
-Raw CSV:
-
-```text
-assets/llama_benchy_full_july2026_not_submitted.csv
-```
+Raw CSV: [`llama_benchy_full_july2026_not_submitted.csv`](assets/llama_benchy_full_july2026_not_submitted.csv)
 
 > Note: these results are provided as community reference only and have not
 > been submitted to Spark Arena. The original repo benchmark results remain
@@ -631,45 +607,25 @@ anyone who wants to verify this directly.
 
 ## Practical Recommendation
 
-If you are running Nemotron-3-Super-120B-A12B-NVFP4 on a single DGX Spark
-today, use the Config C shape:
+For first-time users, use the main repo instructions and original methodology:
 
-```bash
-nvcr.io/nvidia/vllm:26.05-py3
-```
+[`METHODOLOGY.md`](./METHODOLOGY.md)
 
-with:
+Do not treat Config A or Config B as recommended production paths. They are
+comparison runs for the newer public vLLM stack.
 
-```bash
---served-model-name Cogni-Brain
---gpu-memory-utilization 0.75
---max-model-len 131072
---max-num-seqs 4
---max-num-batched-tokens 16384
---kv-cache-dtype fp8
---moe-backend marlin
---quantization fp4
---speculative_config '{"method":"mtp","num_speculative_tokens":1,"moe_backend":"triton"}'
---reasoning-parser nemotron_v3
---enable-auto-tool-choice
---tool-call-parser qwen3_coder
-```
+Config C is the July 2026 validation run closest to the original repo tuning.
+It confirms the same practical target:
 
-For production-ish local agent work, do **not** blindly chase the largest
-advertised context, and do not assume single-session numbers hold under
-concurrency. The stable, useful target on this stack remains:
+- 131K context
+- ~23-24 tok/s decode, single session
+- `qwen3_coder` tool parsing
+- conservative memory allocation
 
-```text
-131K context
-~23-24 tok/s decode, single session
-qwen3_coder tool parsing
-conservative memory allocation
-```
+The July re-test does not replace the original methodology. It backs it up.
 
-That is the practical sweet spot for Nemotron-3-Super on one DGX Spark for a
-single agent session. For concurrent multi-agent workloads at long context,
-re-test against your specific concurrency and depth requirements - see Key
-Finding 7.
+For concurrent long-context workloads, do not extrapolate from the
+single-session numbers. See Key Finding 7.
 
 ---
 
@@ -734,25 +690,18 @@ what Key Finding 7 shows here.
 
 ## Conclusion
 
-The original `METHODOLOGY.md` configuration is **not obsolete**.
+The original `METHODOLOGY.md` configuration remains the recommended path for
+Nemotron-3-Super-120B on one DGX Spark.
 
-The July 2026 public/official-stack re-test shows:
+The July 2026 re-test shows:
 
 - public defaults are easier, but slower
 - Spark-specific tuning still matters
-- MARLIN still matters
-- MTP still matters
 - `qwen3_coder` still matters for agent tool use
-- the external reasoning parser plugin is no longer needed for the tested path
-- the best result still looks like the original repo config
-- single-session stability does not imply concurrent-load stability at long
-  context - plan accordingly
+- the reasoning parser setup is simpler on the tested NGC/vLLM path
+- single-session stability does not imply concurrent long-context stability
 
-This repo found the working path first.
-
-The official stack now makes one part cleaner.
-
-The war story still stands.
+This experiment does not replace the original methodology. It validates it.
 
 ---
 
