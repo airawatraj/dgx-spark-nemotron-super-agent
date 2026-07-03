@@ -4,7 +4,7 @@
 
 **Author:** Rajendra Singh Rawat (`airawatraj`)  
 **Date:** July 3, 2026  
-**Hardware:** NVIDIA DGX Spark — GB10 Grace-Blackwell, 128 GB unified memory  
+**Hardware:** NVIDIA DGX Spark - GB10 Grace-Blackwell, 128 GB unified memory  
 **Served model name:** `Cogni-Brain`  
 **Original methodology:** [`METHODOLOGY.md`](./METHODOLOGY.md)
 
@@ -15,15 +15,23 @@
 Does the new public vLLM / DGX Spark guidance change the required setup for
 running Nemotron-3-Super-120B-A12B-NVFP4 well on a single DGX Spark?
 
-**No, not materially.**
+**No - not materially.**
 
-The official/public path simplifies one painful part of the original setup:
-the external `super_v3_reasoning_parser.py` plugin is no longer required.
-The reasoning parser is now built into vLLM as:
+The later public stack validates the original methodology more than it replaces
+it. The main quality-of-life improvement is parser ergonomics: in the vLLM
+blog / NGC path tested here, the external `super_v3_reasoning_parser.py`
+plugin is no longer required because the built-in parser works:
 
 ```bash
 --reasoning-parser nemotron_v3
 ```
+
+However, this is image/version-specific. The Hugging Face model card still
+documents a plugin-based `super_v3` parser path for some vLLM 0.20.0 runs, so
+the safest statement is:
+
+> The parser plugin is no longer required for the working NGC/vLLM path tested
+> in this repo. It may still appear in other official examples.
 
 Everything else from the original war story still matters.
 
@@ -34,7 +42,7 @@ conservative memory allocation, explicit batching limits, and
 
 | Path | Result |
 |---|---:|
-| Public vLLM / HF quickstart-style path | **16.5 tok/s** |
+| Public vLLM image baseline, intentionally without Spark-specific tuning | **16.5 tok/s** |
 | Public image + Spark tuning | **22.6 tok/s** |
 | NGC image + original repo tuning | **23.6 tok/s avg / 24.3 peak** |
 | Tool-eval score on best July config | **90 / 100** |
@@ -42,7 +50,7 @@ conservative memory allocation, explicit batching limits, and
 
 The conclusion is simple:
 
-> The official stack did not obsolete this repo.  
+> The official/public stack did not obsolete this repo.
 > It validated the repo.
 
 ---
@@ -54,13 +62,13 @@ On June 1, 2026, the vLLM team published:
 > [vLLM on the DGX Spark: Architecture, Configuration, and Local Evaluation](https://vllm.ai/blog/2026-06-01-vllm-dgx-spark)
 
 Shortly after, the Hugging Face model card for
-`nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` showed a public vLLM path
-using vLLM 0.20.0 and DGX Spark as a supported target.
+`nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` showed vLLM 0.20.0 and
+DGX Spark as a supported target.
 
 That raised the obvious question for this repo:
 
-**Did the official/public path finally replace the custom setup documented in
-`METHODOLOGY.md`?**
+**Did the later official/public path finally replace the custom setup
+documented in `METHODOLOGY.md`?**
 
 This follow-up answers that question with a fresh July 2026 run.
 
@@ -102,13 +110,36 @@ sync
 echo 3 | sudo tee /proc/sys/vm/drop_caches
 ```
 
+**A note on what each config isolates.** Configs A and B stay on the public
+vLLM 0.20.0 image line and vary the Spark-specific tuning flags, which
+isolates the main throughput impact of carrying forward the repo tuning:
+**+6.1 tok/s** (16.5 to 22.6).
+
+Config C is different. It is not a single-variable A/B test against Config B.
+It changes the runtime path to the NVIDIA-maintained NGC image, uses the local
+NGC checkpoint path, enables the original repo's FP8 KV / FP4 / MARLIN stack,
+uses a more conservative memory target, and restores `qwen3_coder` tool-call
+parsing.
+
+That means the B-to-C result should not be read as proof that one individual
+flag caused the additional gain. Config C is included because it represents
+the best full working stack found in this repo, not because it isolates a
+single variable.
+
 ---
 
-## Config A — Public vLLM / HF Quickstart-Style Path
+## Config A - Public vLLM Image Baseline, No Spark-Specific Tuning
 
-This is the closest public-image baseline path: vLLM DockerHub image,
-default-ish backend selection, no explicit MARLIN tuning, no speculative
-decoding.
+This is a public DockerHub vLLM image baseline. It intentionally does **not**
+use the full Spark/Nemotron tuning stack.
+
+This is **not** the most aggressive Hugging Face model-card recipe. The HF
+card includes additional Spark-specific flags in some examples, including
+MARLIN, FP8 KV, speculative decoding, and parser-plugin options. Config A is
+included to answer a narrower question:
+
+> What happens if I start from the public image without carrying forward the
+> repo's original Spark-specific tuning?
 
 ```bash
 docker rm -f spark-brain 2>/dev/null || true
@@ -131,19 +162,21 @@ docker run -d --name spark-brain --gpus all \
     --trust-remote-code \
     --async-scheduling \
     --enable-chunked-prefill \
+    --mamba-ssm-cache-dtype float16 \
+    --max-cudagraph-capture-size 128 \
     --reasoning-parser nemotron_v3 \
     --enable-auto-tool-choice \
     --tool-call-parser hermes
 ```
 
-**Observed path:** public vLLM 0.20.0  
-**Backend:** auto-selected path  
-**MTP speculative decoding:** not enabled  
+**Observed path:** public vLLM 0.20.0
+**Backend:** auto-selected path
+**MTP speculative decoding:** not enabled
 **Result:** **16.5 tok/s**
 
 ---
 
-## Config B — Public Image + Community Spark Tuning
+## Config B - Public Image + Community Spark Tuning
 
 This keeps the public vLLM image but applies the important tuning discovered
 during the original repo work: MARLIN, chunked prefill, explicit batching,
@@ -161,7 +194,7 @@ docker run -d --name spark-brain --gpus all \
   -e VLLM_USE_FLASHINFER_MOE_FP4=0 \
   -e HF_TOKEN="$HF_TOKEN" \
   -v "${HOME}/.cache/huggingface:/root/.cache/huggingface" \
-  vllm/vllm-openai:v0.20.0 \
+  vllm/vllm-openai@sha256:3dbe092ec5b2cef63b6104d33fa75d6ce53a7870962529ada69f78bbbc38e776 \
     --model nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4 \
     --served-model-name Cogni-Brain \
     --host 0.0.0.0 \
@@ -183,22 +216,35 @@ docker run -d --name spark-brain --gpus all \
     --tool-call-parser hermes
 ```
 
-**Observed path:** public vLLM 0.20.0  
-**Backend:** MARLIN forced via env + CLI  
-**MTP speculative decoding:** enabled, 1 token  
+**Observed path:** public vLLM image, pinned digest, reporting as vLLM 0.20.0
+**Backend:** MARLIN forced via env + CLI
+**MTP speculative decoding:** enabled, 1 token
 **Result:** **22.6 tok/s**
 
+![Config B speed benchmark, tests 1-3](assets/benchmark_speed_configb_public_july2026_1.png)
+
+![Config B speed benchmark, test 4-5 and summary](assets/benchmark_speed_configb_public_july2026_2.png)
+
 Tool calling with `hermes` on this public-image path did not reproduce the
-original repo's agentic reliability.
+original repo's agentic reliability. On the most basic single-tool scenario
+in the suite, TC-01 ("Direct Specialist Match"), the model did not cleanly
+route the request to `get_weather` at all:
+
+![Config B SMARTS benchmark, command and TC-01 to TC-03](assets/benchmark_smarts_configb_public_july2026_1.png)
+
+![Config B SMARTS benchmark, TC-03 to TC-15 and category breakdown](assets/benchmark_smarts_configb_public_july2026_2.png)
+
+![Config B SMARTS benchmark, final score 20/100](assets/benchmark_smarts_configb_public_july2026_3.png)
 
 ---
 
-## Config C — NGC Image + Original Repo Tuning, Updated Parser
+## Config C - NGC Image + Original Repo Tuning, Updated Parser
 
 This is the original working repo configuration updated for July 2026.
 
 The only meaningful simplification from the original methodology is that the
-external parser plugin is no longer needed. The command now uses:
+external parser plugin is not needed for this image/version path. The command
+uses:
 
 ```bash
 --reasoning-parser nemotron_v3
@@ -211,12 +257,12 @@ docker rm -f spark-brain 2>/dev/null || true
 
 docker run -d --name spark-brain --gpus all \
   --restart=unless-stopped \
-  --ipc=host \
   --shm-size=16gb \
   -p 8000:8000 \
   -e VLLM_NVFP4_GEMM_BACKEND=marlin \
   -e VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 \
   -e VLLM_USE_FLASHINFER_MOE_FP4=0 \
+  -e HF_HUB_OFFLINE=1 \
   -e NGC_API_KEY="$NGC_API_KEY" \
   -v "$HOME/nim-cache:/nim-cache" \
   nvcr.io/nvidia/vllm:26.05-py3 \
@@ -227,6 +273,7 @@ docker run -d --name spark-brain --gpus all \
     --async-scheduling \
     --dtype auto \
     --kv-cache-dtype fp8 \
+    --tensor-parallel-size 1 \
     --trust-remote-code \
     --gpu-memory-utilization 0.75 \
     --enable-chunked-prefill \
@@ -242,13 +289,13 @@ docker run -d --name spark-brain --gpus all \
     --tool-call-parser qwen3_coder
 ```
 
-**Observed engine:** `vLLM 0.20.1+7124b12a.dev`  
-**Image:** `nvcr.io/nvidia/vllm:26.05-py3`  
-**Backend:** MARLIN forced via env + CLI  
-**KV cache:** FP8  
-**MTP speculative decoding:** enabled, 1 token  
-**Tool parser:** `qwen3_coder`  
-**Result:** **23.6 tok/s avg / 24.3 peak**  
+**Observed engine:** `vLLM 0.20.1+7124b12a.dev`
+**Image:** `nvcr.io/nvidia/vllm:26.05-py3`
+**Backend:** MARLIN forced via env + CLI
+**KV cache:** FP8
+**MTP speculative decoding:** enabled, 1 token
+**Tool parser:** `qwen3_coder`
+**Result:** **23.6 tok/s avg / 24.3 peak**
 **SMARTS score:** **90 / 100**
 
 This is the best working NVIDIA-maintained path I found for Nemotron-3-Super
@@ -260,11 +307,13 @@ on DGX Spark.
 
 | Config | Image | Avg TPS | Peak TPS | Max Context |
 |---|---|---:|---:|---:|
-| A — Public quickstart-style path | `vllm/vllm-openai:v0.20.0` | **16.5 tok/s** | 16.5 tok/s | 131,072 |
-| B — Public image + Spark tuning | `vllm/vllm-openai:v0.20.0` | **22.6 tok/s** | 22.9 tok/s | 131,072 |
-| C — NGC + original repo tuning | `nvcr.io/nvidia/vllm:26.05-py3` | **23.6 tok/s** | 24.3 tok/s | 131,072 |
+| A - Public vLLM baseline, no Spark-specific tuning | `vllm/vllm-openai:v0.20.0` | **16.5 tok/s** | 16.5 tok/s | 131,072 |
+| B - Public image + Spark tuning | `vllm/vllm-openai:v0.20.0`, pinned digest | **22.6 tok/s** | 22.9 tok/s | 131,072 |
+| C - NGC + original repo tuning | `nvcr.io/nvidia/vllm:26.05-py3` | **23.6 tok/s** | 24.3 tok/s | 131,072 |
 
-Config C is stable at roughly 23–24 tok/s across the tested context range.
+Config C is stable at roughly 23-24 tok/s across the tested context range.
+As noted above, the B-to-C result reflects the full NGC/original-repo runtime
+path, not a single isolated flag or image change.
 
 ![Benchmark test 1-3 July 2026](assets/benchmark_test_1-3_july2026.png)
 
@@ -291,21 +340,53 @@ Config C was tested progressively across increasing prompt sizes.
 
 The important part is not just that the server accepts a 131K context setting.
 The important part is that decode speed does not collapse at the top of the
-window.
+window **at single-session concurrency**. This does not extend to concurrent
+long-context load; see the concurrency caveat under the `llama-benchy` full
+run below.
 
 ---
 
-## Tool-Call Benchmark — SMARTS
+## Tool-Call Benchmark - SMARTS
 
 Tool-agent behaviour was tested using `tool-eval-bench` v1.7.0.
 
 | Config | Parser | Score | Rating |
 |---|---|---:|---|
-| B — Public image + Spark tuning | `hermes` | **20 / 100** | Poor |
-| C — NGC + original repo tuning | `qwen3_coder` | **90 / 100** | Excellent |
+| B - Public image + Spark tuning | `hermes` | **20 / 100** | Poor |
+| C - NGC + original repo tuning | `qwen3_coder` | **90 / 100** | Excellent |
 | Original repo, May 2026 | `qwen3_coder` | **93 / 100** | Excellent |
 
-Config C July 2026 category breakdown:
+Config B category breakdown (`hermes` parser, public image):
+
+| Category | Score | Earned |
+|---|---:|---:|
+| Tool Selection | 0% | 0 / 6 |
+| Parameter Precision | 0% | 0 / 6 |
+| Multi-Step Chains | 0% | 0 / 6 |
+| Restraint & Refusal | 100% | 6 / 6 |
+| Error Recovery | 0% | 0 / 6 |
+
+Config B raw summary:
+
+```text
+Score: 20 / 100
+Rating: Poor
+Passed: 3
+Partial: 0
+Failed: 12
+Quality: 20 / 100
+Responsiveness: 36 / 100
+Deployability: 25 / 100
+Weakest category: Tool Selection (0%)
+```
+
+The `hermes` parser on this stack reliably declined to call tools when it
+had no matching tool (`Restraint & Refusal` at 100%), but essentially never
+succeeded when a tool call was actually the correct action. This is a
+parser/format mismatch, not a model capability issue - the same weights
+score 90/100 with `qwen3_coder` in Config C below.
+
+Config C July 2026 category breakdown (`qwen3_coder` parser, NGC image):
 
 | Category | Score | Earned |
 |---|---:|---:|
@@ -315,7 +396,7 @@ Config C July 2026 category breakdown:
 | Restraint & Refusal | 100% | 6 / 6 |
 | Error Recovery | 83% | 5 / 6 |
 
-Summary:
+Config C summary:
 
 ```text
 Score: 90 / 100
@@ -339,10 +420,10 @@ Weakest category: Parameter Precision
 
 ## Key Findings
 
-### 1. The public quickstart-style path is not the performance path
+### 1. The public baseline is not the performance path
 
-The public vLLM image with the simple/default path reached **16.5 tok/s** in
-this run. That is below the original repo baseline.
+The public vLLM image baseline reached **16.5 tok/s** in this run. That is
+below the original repo baseline.
 
 The model and hardware are capable of more. The difference is configuration.
 
@@ -360,7 +441,7 @@ For DGX Spark, the performance path still requires explicit tuning:
 The original methodology forced MARLIN because the automatic path was not
 reliably selecting the best kernel for this hardware/profile.
 
-That remains true in July 2026.
+That remains true in July 2026 for the tested path.
 
 The tuned public image improved from **16.5 tok/s** to **22.6 tok/s** after
 Spark-specific tuning. The NGC image plus original tuning reached **23.6 tok/s
@@ -371,7 +452,8 @@ avg / 24.3 tok/s peak**.
 `METHODOLOGY.md` documented `--tool-call-parser qwen3_coder` as the working
 compromise for tool calling on this stack.
 
-The July 2026 run confirms the same operational lesson.
+The July 2026 run confirms the same operational lesson, and this time with
+full raw output attached rather than a summary claim.
 
 The 70-point gap tracks the parser/runtime path: `hermes` on the public image
 fails the agentic benchmark, while `qwen3_coder` on the NGC image restores the
@@ -379,15 +461,25 @@ behaviour documented in the original methodology.
 
 Observed result:
 
-- `hermes` on public image path: **20 / 100 SMARTS**
-- `qwen3_coder` on NGC path: **90 / 100 SMARTS**
+- `hermes` on public image path: **20 / 100 SMARTS** (3 passed, 0 partial, 12 failed)
+- `qwen3_coder` on NGC path: **90 / 100 SMARTS** (13 passed, 1 partial, 1 failed)
 
-For real agent work, throughput is not enough. Tool correctness matters.
+On `hermes`, the model failed even the most basic single-tool case - TC-01
+("Direct Specialist Match") did not cleanly route to `get_weather`, despite
+that being the most straightforward scenario in the suite. Tool Selection,
+Parameter Precision, Multi-Step Chains, and Error Recovery all scored 0%.
+The only category that scored well was Restraint & Refusal (100%) - the
+model correctly declined when no matching tool existed, it just could not
+reliably call one when it should have.
+
+For real agent work, throughput is not enough. Tool correctness matters, and
+tool correctness on this stack is a function of parser choice, not raw model
+capability.
 
 ### 4. The NGC image is the best working NVIDIA-maintained path found here
 
-The vLLM blog points to a DGX Spark direction. The HF card gives a public
-vLLM path. In this local testing, the strongest result came from the
+The vLLM blog points to a DGX Spark direction. The HF card gives public vLLM
+examples. In this local testing, the strongest result came from the
 NVIDIA-maintained NGC image:
 
 ```text
@@ -402,12 +494,12 @@ vLLM 0.20.1+7124b12a.dev
 
 On this DGX Spark, it delivered the best combination of:
 
-- stable 23–24 tok/s decode
+- stable 23-24 tok/s decode
 - full 131K usable context
 - 90/100 tool-eval score
 - OpenAI-compatible serving for NemoHermes / local agents
 
-### 5. One real simplification: the parser plugin is gone
+### 5. One real simplification: the parser plugin is no longer needed here
 
 The original setup required an external parser plugin:
 
@@ -415,7 +507,7 @@ The original setup required an external parser plugin:
 super_v3_reasoning_parser.py
 ```
 
-That is no longer needed for this path.
+For the NGC/vLLM path tested here, that file is no longer needed.
 
 Use the built-in parser:
 
@@ -423,9 +515,11 @@ Use the built-in parser:
 --reasoning-parser nemotron_v3
 ```
 
-This is the one clear quality-of-life improvement from the later stack.
+Important nuance: the Hugging Face model card may still show plugin-based
+examples for other image/version combinations. Treat parser support as
+version-specific.
 
-### 6. The FP4 warning is expected, not fatal
+### 6. The FP4 warning is expected in this tested stack, not fatal
 
 The logs may show a warning like:
 
@@ -434,10 +528,44 @@ WARNING: Your GPU does not have native support for FP4 computation.
 Weight-only FP4 compression will be used via the Marlin kernel.
 ```
 
-On DGX Spark, this is expected.
+This should be interpreted as a vLLM/kernel-path warning for this NVFP4
+checkpoint on this GB10 stack, not as a blanket claim that DGX Spark has no
+FP4 hardware capability.
 
 The practical result matters more than the warning: with the MARLIN path,
-Config C still reaches stable 23–24 tok/s decode.
+Config C still reaches stable 23-24 tok/s decode.
+
+### 7. Single-session stability does not extend to concurrent long-context load
+
+Config C's single-session (`c1`) decode speed stays in a tight 21.6-24.5
+tok/s band from ~1K tokens out to ~131K tokens of context. That result is
+real, but it is a single-session result, and it should not be read as "this
+stack handles concurrent long-context agents well."
+
+The full `llama-benchy` sweep (`c1` through `c10`, at context depths out to
+100K) shows that concurrency and long context compound badly on this
+hardware:
+
+| Test | t/s (total) |
+|---|---:|
+| `tg128 (c1)` baseline | 21.67 |
+| `tg128 @ d65535 (c10)` | 3.80 |
+| `tg128 @ d100000 (c2)` | 4.60 |
+| `tg128 @ d100000 (c10)` | 2.35 |
+
+At `d100000`, two concurrent sessions (4.60 tok/s total) perform *worse*
+than a single session at the same depth (24.08 tok/s from the Context
+Window Result table above) - concurrency is actively harmful once context
+gets large enough on this unified-memory hardware. By `c10` at `d100000`,
+throughput has collapsed to roughly 11% of the single-session baseline.
+
+This is expected memory-bandwidth-bound behaviour for a 120B-class model on
+GB10 unified memory, not a defect specific to this configuration. But it
+means the practical concurrency ceiling for long-context multi-agent
+workloads on this stack is well below what the single-session numbers alone
+would suggest. Plan single-agent, single-session deployments around the
+131K/24 tok/s numbers above. Do not extrapolate them to multi-agent
+concurrent long-context use without re-testing.
 
 ---
 
@@ -445,23 +573,23 @@ Config C still reaches stable 23–24 tok/s decode.
 
 | Item | Original May 2026 methodology | July 2026 result |
 |---|---|---|
-| External reasoning parser plugin | Required | No longer required |
+| External reasoning parser plugin | Required | Not required for the tested NGC/vLLM path |
 | `--reasoning-parser` | plugin-provided `super_v3` | built-in `nemotron_v3` |
-| MARLIN env vars | Required | Still required for best result |
-| MTP speculative decoding | Required for peak baseline | Still required for best result |
+| MARLIN env vars | Required | Still required for best tested result |
+| MTP speculative decoding | Required for peak baseline | Still required for best tested result |
 | FP8 KV cache | Used in tuned config | Still used |
-| `--tool-call-parser qwen3_coder` | Required for agent reliability | Still required for best result |
+| `--tool-call-parser qwen3_coder` | Required for agent reliability | Still required for best tested result |
 | NGC image | Earlier NVIDIA image / nightly path | `nvcr.io/nvidia/vllm:26.05-py3` |
-| Performance | ~24 tok/s | ~23–24 tok/s |
+| Performance | ~24 tok/s | ~23-24 tok/s |
 | Tool eval | 93 / 100 | 90 / 100 |
 
-One parser-file workaround disappeared.
+One parser-file workaround disappeared for the tested path.
 
 The rest of the war story carries forward.
 
 ---
 
-## llama-benchy Full Run — Config C
+## llama-benchy Full Run - Config C
 
 A full Spark Arena-style `llama-benchy` run was also captured for community
 reference.
@@ -493,8 +621,11 @@ Selected results:
 | tg128 @ d65535 c1 | 22.86 ± 1.38 | 26.33 |
 | tg128 @ d100000 c1 | 21.57 ± 0.72 | 24.67 |
 
-The run shows stable single-session decode from small prompts through large
-context depths. No meaningful collapse was observed at high context.
+Single-session decode is stable from small prompts through large context
+depths, as shown above. See Key Finding 7 for what happens once concurrency
+is combined with long context - the picture is materially different, and the
+raw CSV linked above contains the full `c2`/`c5`/`c10` x depth matrix for
+anyone who wants to verify this directly.
 
 ---
 
@@ -525,16 +656,20 @@ with:
 ```
 
 For production-ish local agent work, do **not** blindly chase the largest
-advertised context. The stable, useful target on this stack remains:
+advertised context, and do not assume single-session numbers hold under
+concurrency. The stable, useful target on this stack remains:
 
 ```text
 131K context
-~23–24 tok/s decode
+~23-24 tok/s decode, single session
 qwen3_coder tool parsing
 conservative memory allocation
 ```
 
-That is the practical sweet spot for Nemotron-3-Super on one DGX Spark.
+That is the practical sweet spot for Nemotron-3-Super on one DGX Spark for a
+single agent session. For concurrent multi-agent workloads at long context,
+re-test against your specific concurrency and depth requirements - see Key
+Finding 7.
 
 ---
 
@@ -576,8 +711,8 @@ Nemotron-3-Super performance.
 
 I would be happy to be proven wrong.
 
-If you can reproduce better results on a single DGX Spark — especially stable
-262K or 1M context, higher sustained decode, or stronger tool-agent behaviour —
+If you can reproduce better results on a single DGX Spark - especially stable
+262K or 1M context, higher sustained decode, or stronger tool-agent behaviour -
 please open an issue or PR with:
 
 - exact Docker image and digest
@@ -591,7 +726,9 @@ please open an issue or PR with:
 - tool-eval results, if applicable
 
 I am especially interested in comparing notes on configurations that beat
-23–24 tok/s at 131K context while preserving reliable tool calling.
+23-24 tok/s at 131K context while preserving reliable tool calling, and on
+configurations that hold up better under concurrent long-context load than
+what Key Finding 7 shows here.
 
 ---
 
@@ -606,8 +743,10 @@ The July 2026 public/official-stack re-test shows:
 - MARLIN still matters
 - MTP still matters
 - `qwen3_coder` still matters for agent tool use
-- the external reasoning parser plugin is no longer needed
+- the external reasoning parser plugin is no longer needed for the tested path
 - the best result still looks like the original repo config
+- single-session stability does not imply concurrent-load stability at long
+  context - plan accordingly
 
 This repo found the working path first.
 
