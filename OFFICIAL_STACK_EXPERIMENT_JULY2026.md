@@ -12,29 +12,29 @@
 
 ## TL;DR
 
-Does the newer public vLLM / DGX Spark guidance replace the setup documented
-in this repo?
-
-**No. The recommended setup remains this repo's original tuned path.**
-
-The July 2026 re-test shows that the newer public stack is useful, but it does
-not beat the original repo-style run on the same DGX Spark.
-
-| Path | Result |
-|---|---:|
-| Public vLLM image baseline, no Spark-specific tuning | **16.5 tok/s** |
-| Public vLLM image + Spark tuning | **22.6 tok/s** |
-| NGC image + original repo tuning | **23.6 tok/s avg / 24.3 peak** |
-| Best July tool-eval result | **90 / 100** |
-| Original May 2026 tool-eval result | **93 / 100** |
-
-One setup step is simpler now: in the NGC/vLLM path tested here,
-`--reasoning-parser nemotron_v3` works without the old external
-`super_v3_reasoning_parser.py` plugin.
-
-The main lesson did not change: for a first-time user, start with
-[`METHODOLOGY.md`](./METHODOLOGY.md). This file is the July 2026 validation
-run, not a replacement runbook.
+> **Question:** Does the newer public vLLM / DGX Spark guidance replace the
+> setup documented in this repo?
+>
+> **Answer:** No. The recommended setup remains this repo's original tuned path.
+>
+> The July 2026 re-test shows that the newer public stack is useful, but it
+> does not beat the original repo-style run on the same DGX Spark.
+>
+> | Path | Result |
+> |---|---:|
+> | Public vLLM image baseline, no Spark-specific tuning | **16.5 tok/s** |
+> | Public vLLM image + Spark tuning | **22.6 tok/s** |
+> | NGC image + original repo tuning | **23.6 tok/s avg / 24.3 peak** |
+> | Best July tool-eval result | **90 / 100** |
+> | Original May 2026 tool-eval result | **93 / 100** |
+>
+> One setup step is simpler now: in the NGC/vLLM path tested here,
+> `--reasoning-parser nemotron_v3` works without the old external
+> `super_v3_reasoning_parser.py` plugin.
+>
+> The main lesson did not change: for a first-time user, start with
+> [`METHODOLOGY.md`](./METHODOLOGY.md). This file is the July 2026 validation
+> run, not a replacement runbook.
 
 ---
 
