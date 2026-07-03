@@ -1,22 +1,23 @@
 # Running a Real Local AI Agent on DGX Spark · Nemotron-3-Super-120B
 
-I bought a DGX Spark to do real work: running serious local AI agents and training foundation models from scratch - not to run benchmarks.
+I bought a DGX Spark to do real work: running serious local AI agents and training small language models from scratch - not to run benchmarks.
 
 *(If you are curious about the training side of this hardware, check out [SageGPT](https://github.com/airawatraj/sage-gpt), my 7.5M parameter Sanskrit SLM trained entirely from scratch on this same machine).*
 
-This repo documents what it took to get [Nemotron-3-Super-120B](https://hfviewer.com/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4) actually working
+This repo documents what it took to get [Nemotron-3-Super-120B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4) actually working
 for real agentic tasks: building apps autonomously, solving puzzles, writing code.
 
-The benchmarks are here because community results ranged from 16–19.5 TPS and I
+The benchmarks are here because community results ranged from 16-19.5 TPS and I
 wanted to understand why mine was different. They're a side effect, not the goal.
 
 > ⚠️ **Personal workstation setup. Not for enterprise use. Use at your own risk.**
 
 > **July 2026 update:** I re-tested the newer public vLLM / DGX Spark stack.
-> For first-time users, this repo remains my recommended starting point for
-> **Nemotron-3-Super-120B on one DGX Spark**. I have not found a better
-> single-Spark run for this 120B model yet. Official-stack re-test:
+> It did not replace this repo's original tuned setup. For first-time users, this repo
+> remains my recommended starting point for **Nemotron-3-Super-120B on one
+> DGX Spark**. Official-stack validation:
 > [`OFFICIAL_STACK_EXPERIMENT_JULY2026.md`](./OFFICIAL_STACK_EXPERIMENT_JULY2026.md).
+
 ---
 
 ## Real Work, Not Just Benchmarks
@@ -26,14 +27,14 @@ wanted to understand why mine was different. They're a side effect, not the goal
 I came across a reddit thread that claimed ["There's not a SINGLE local LLM which can solve this logic puzzle"](https://www.reddit.com/r/LocalLLaMA/comments/1mblq5g/theres_not_a_single_local_llm_which_can_solve/) -
 only o3 could do it at the time of posting.
 
-Cogni-Brain solved it locally in 3 minutes. (and [Cogni-Brain2](https://github.com/airawatraj/dgx-spark-qwen-super-agent) in about 30 seconds)
+Cogni-Brain solved it locally in 3 minutes; [Cogni-Brain2](https://github.com/airawatraj/dgx-spark-qwen-omni-super-agent) solved it in about 30 seconds.
 
 <p align="center">
   <img src="./assets/openwebui_logic_puzzle.png" width="600" alt="Logic Puzzle Solution">
   <br><i>Cogni-Brain reasoning through the Albert-Bernard-Cheryl puzzle</i>
 </p>
 
-The same prompt on [NVIDIA's own cloud-hosted endpoint](https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b) returned an internal server error:
+In my test, the same prompt on [NVIDIA's cloud-hosted endpoint](https://build.nvidia.com/nvidia/nemotron-3-super-120b-a12b) returned an internal server error:
 
 <p align="center">
   <img src="./assets/cloud_inference_fails.png" width="600">
@@ -42,7 +43,7 @@ The same prompt on [NVIDIA's own cloud-hosted endpoint](https://build.nvidia.com
 ### 90 minutes of autonomous agentic work
 
 Cogni-Brain built a complete HTML5 chess app via NemoHermes - pawn promotion,
-en passant, castling - running 60 tool-call iterations completely autonomously. The agent successfully navigated proxy timeouts and managed a massive 130K context window without crashing the KV cache. Progress updates were delivered to Telegram throughout.
+en passant, castling - running 60 tool-call iterations completely autonomously. The agent successfully navigated proxy timeouts and managed a 130K context window without crashing the KV cache. Progress updates were delivered to Telegram throughout.
 
 <p align="center">
   <img src="./assets/nemohermes_telegram_chess_build.png" width="260" alt="Telegram Progress">
@@ -63,11 +64,13 @@ analyzing the vLLM codebase - on the same Spark it is running on.
 Cogni-Brain is framework-agnostic and comfortably drives various agent environments on the local hardware.
 
 **Claude Code CLI**
+
 <p align="center">
   <img src="./assets/claude_code_tui_chess_build.png" width="600" alt="Claude Code running Cogni-Brain">
 </p>
 
 **NemoHermes TUI**
+
 <p align="center">
   <img src="./assets/nemohermes_tui_active.png" width="600" alt="NemoHermes TUI">
 </p>
@@ -81,14 +84,14 @@ Cogni-Brain is framework-agnostic and comfortably drives various agent environme
 ### Official spark-arena Submission
 
 > Benchmarked using [llama-benchy](https://github.com/eugr/llama-benchy) with the standardised spark-arena methodology.
-> NemoHermes and Open WebUI containers were stopped during this run. Only spark-brain (vLLM) running.
+> NemoHermes and Open WebUI containers were stopped during this run. Only the spark-brain vLLM container was running.
 > Published result recorded with `llama-benchy v0.3.8.dev2+gff162bcfc`.
 
 | Metric | Result |
 |---|---|
 | Single session TPS (tg128) | **23.71 tok/s** |
 | Peak TPS (tg128 c5) | **72.67 tok/s** |
-| Context stability | **Stable 0 → 100K tokens** |
+| Context stability | **Stable 0 to 100K tokens** |
 | Total benchmark tests | 104 |
 | Total benchmark duration | **5h 49m** |
 | Crashes / OOM errors | **0** |
@@ -100,7 +103,7 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 
 <p align="center">
   <img src="./assets/spark_arena_leaderboard.png" width="800" alt="spark-arena leaderboard - May 14, 2026">
-  <br><i>spark-arena community leaderboard — Single Node, NVFP4, vLLM, concurrency 1 — May 14, 2026</i>
+  <br><i>spark-arena community leaderboard - Single Node, NVFP4, vLLM, concurrency 1 - May 14, 2026</i>
 </p>
 
 ### Custom Script Benchmark (vLLM Only)
@@ -167,23 +170,22 @@ View full benchmark: [spark-arena.com/benchmark/sub1778644062716](https://spark-
 > Other 120B models (e.g. gpt-oss-120b) use different architectures optimised for throughput rather than deep reasoning
 > and are not directly comparable for agentic workloads.
 
-
 | Who | TPS | Stack | Context | Concurrent |
 |---|---|---|---|---|
-| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) — official** | **23.71** | NVFP4 + vLLM | 131K | 1 |
-| **Cogni-Brain (airawatraj) — custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
-| **Cogni-Brain (airawatraj) — custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
+| **[Cogni-Brain (airawatraj)](https://spark-arena.com/benchmark/sub1778644062716) - official** | **23.71** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) - custom script** | **24.1** | NVFP4 + vLLM | 131K | 1 |
+| **Cogni-Brain (airawatraj) - custom script concurrent** | **53.9** | NVFP4 + vLLM | 131K | 4 |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 21.66 | NVFP4 + vLLM | 131K | 1 |
 | [Seth Hobson](https://spark-arena.com/benchmark/a3dd9b9f-d9a6-485b-af72-fd34150a8b7c) (spark-arena, tg128) | 53.55 | NVFP4 + vLLM | 131K | 5 |
 | [Saiyam Pathak](https://saiyampathak.medium.com/heres-what-i-learned-about-nemotron-3-super-i-ran-a-120b-parameter-model-on-nvidia-dgx-spark-fc5b3be12ae1) | 19.5 | Q4_K_M GGUF + llama.cpp | 262K | 1 |
 | [Raphael Amorim](https://spark-arena.com/benchmark/55beae02-e7a5-4e8a-98d3-325ba86b4583) | 16.55 | NVFP4 + vLLM | 262K | unknown |
-| josephbreda | 16–17 | NVFP4 + vLLM | unknown | 1 |
+| josephbreda | 16-17 | NVFP4 + vLLM | unknown | 1 |
 
-The official spark-arena submission achieved **23.71 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) —
+The official spark-arena submission achieved **23.71 TPS** (tg128, vLLM, NVFP4, Single Node, no production services) -
 the highest single-node result I found published for Nemotron-3-Super-120B-A12B-NVFP4 as of May 26, 2026.
 
 TPS remains stable from 0 to 100,000 tokens of context with no performance cliff observed.
-Happy to be proved wrong. Let's extract max juice out of Spark.
+Happy to be proven wrong. The goal is to extract the most useful performance from Spark.
 
 ---
 
@@ -192,9 +194,9 @@ Happy to be proved wrong. Let's extract max juice out of Spark.
 - **NVIDIA DGX Spark** (GB10 Grace-Blackwell Superchip)
 - **128 GB unified memory** (CPU + GPU shared)
 - **Kernel-Level Sandboxing:** The NemoHermes agent stack operates inside an OpenShell environment with K3s, Landlock, and seccomp profiles for isolation during autonomous code generation.
-- GPU operating under 75°C throughout
+- GPU stayed under 75°C during benchmark runs
 
-> **Note (Software Limitation):** While the GB10 chip features 5th-gen Tensor Cores capable of FP4, the current vLLM/FlashInfer ecosystem lacks native FP4 MoE kernels for the desktop SM120/SM121 architecture. NVFP4 currently provides weight compression (fitting the model in 128 GB) but forces a fallback to the Marlin dequantization path for compute. See [METHODOLOGY.md](METHODOLOGY.md) for details.
+> **Note (Software Limitation):** At the time of this run, the vLLM/FlashInfer path used here does not provide native FP4 MoE compute kernels for the desktop GB10 SM120/SM121 profile. NVFP4 fits the model in 128 GB through weight compression, while compute uses the Marlin dequantization path. See [METHODOLOGY.md](./METHODOLOGY.md) for details.
 
 ---
 
@@ -243,23 +245,24 @@ tool versions recorded with those results.
 
 ```text
 dgx-spark-nemotron-super-agent/
-├── README.md                    ← this file
-├── METHODOLOGY.md               ← full benchmark measurement methodology
-├── NEMOHERMES.md                ← hardened agentic stack configuration
-├── CITATION.cff                 ← citation metadata
+├── README.md                                ← this file
+├── METHODOLOGY.md                           ← original tuned DGX Spark methodology
+├── OFFICIAL_STACK_EXPERIMENT_JULY2026.md    ← July 2026 official-stack validation
+├── NEMOHERMES.md                            ← hardened agentic stack configuration
+├── CITATION.cff                             ← citation metadata
 ├── setup/
-│   ├── install.sh               ← prerequisites, swap disable
-│   ├── download_model.sh        ← fetch model weights into NIM cache
-│   └── download_parser.sh       ← fetch super_v3_reasoning_parser.py
+│   ├── install.sh                           ← prerequisites, swap disable
+│   ├── download_model.sh                    ← fetch model weights into NIM cache
+│   └── download_parser.sh                   ← fetch super_v3_reasoning_parser.py
 ├── docker/
-│   ├── start.sh                 ← launch vLLM (final production command)
-│   ├── stop.sh                  ← stop and remove container
-│   └── status.sh                ← health check + memory + VmSwap
+│   ├── start.sh                             ← launch vLLM
+│   ├── stop.sh                              ← stop and remove container
+│   └── status.sh                            ← health check, memory, VmSwap
 ├── benchmark/
-│   ├── benchmark_speed.py       ← TPS, TTFT, context window benchmark
-│   ├── benchmark_speed_arena.py ← long spark-arena-style llama-benchy sweep
-│   └── benchmark_smarts.py      ← tool-eval-bench capability benchmark
-└── assets/                      ← terminal output and real-use images
+│   ├── benchmark_speed.py                   ← TPS, TTFT, context-window benchmark
+│   ├── benchmark_speed_arena.py             ← long spark-arena-style sweep
+│   └── benchmark_smarts.py                  ← tool-eval-bench capability benchmark
+└── assets/                                  ← screenshots and benchmark artifacts
 ```
 
 ---
@@ -281,20 +284,19 @@ dgx-spark-nemotron-super-agent/
 
 ## Known Limitations
 
-- Nightly vLLM image - not a stable release
+- Original runbook uses a nightly vLLM image, not a stable release
 - Uncalibrated FP8 KV cache scaling factors
-- Current software stack lacks native FP4 MoE compute kernels for GB10 (SM121), forcing Marlin dequantization fallback
-- Single node only (dual-Spark would enable true 1M context)
+- At the time of this run, the tested stack uses Marlin dequantization rather than native FP4 MoE compute on GB10
 - Stream stalls under sustained long-running agentic load (NemoHermes retries automatically)
 
-See [METHODOLOGY.md](METHODOLOGY.md) for full details on each limitation.
+See [METHODOLOGY.md](./METHODOLOGY.md) for full details on each limitation.
 
 ---
 
 ## Feedback Welcome
 
-If you reproduce these results, find errors in the methodology, or achieve higher
-numbers - please open an issue or PR. The goal is accurate community benchmarks,
+If you reproduce these results, find an error in the methodology, or achieve higher
+numbers, please open an issue or PR. The goal is accurate community benchmarks,
 not records.
 
 **Author:** Rajendra Rawat · May 2026
