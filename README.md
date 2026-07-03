@@ -15,7 +15,7 @@ wanted to understand why mine was different. They're a side effect, not the goal
 > **July 2026 update:** I re-tested the newer public vLLM / DGX Spark stack.
 > For first-time users, this repo remains my recommended starting point for
 > **Nemotron-3-Super-120B on one DGX Spark**. I have not found a better
-> single-Spark run for this 120B model yet. Results and caveats:
+> single-Spark run for this 120B model yet. Official-stack re-test:
 > [`OFFICIAL_STACK_EXPERIMENT_JULY2026.md`](./OFFICIAL_STACK_EXPERIMENT_JULY2026.md).
 ---
 
