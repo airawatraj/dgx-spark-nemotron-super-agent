@@ -4,6 +4,14 @@ I bought a DGX Spark to do real work: running serious local AI agents and traini
 
 *(If you are curious about the training side of this hardware, check out [SageGPT](https://github.com/airawatraj/sage-gpt), my 7.5M parameter Sanskrit SLM trained entirely from scratch on this same machine).*
 
+![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)
+![Base Model](https://img.shields.io/badge/base%20model-Nemotron--3--Super--120B-cyan)
+![Runtime](https://img.shields.io/badge/runtime-vLLM-orange)
+![Hardware](https://img.shields.io/badge/hardware-NVIDIA%20DGX%20Spark-brightgreen?logo=nvidia&logoColor=white)
+![Context](https://img.shields.io/badge/context-131K-blue)
+![Tool Eval](https://img.shields.io/badge/tool--eval-93%2F100-green)
+![Mode](https://img.shields.io/badge/mode-reasoning%20path-black)
+
 This repo documents what it took to get [Nemotron-3-Super-120B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4) actually working
 for real agentic tasks: building apps autonomously, solving puzzles, writing code.
 
